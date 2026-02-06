@@ -37,7 +37,7 @@ public class Announcement extends SoftDeletableEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "class_id", foreignKey = @ForeignKey(name = "fk_announcements_class"))
-    private Class classEntity;
+    private ClassEntity classEntity;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "priority", nullable = false)

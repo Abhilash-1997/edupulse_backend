@@ -19,7 +19,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Class extends SoftDeletableEntity {
+public class ClassEntity extends SoftDeletableEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "school_id", nullable = false, foreignKey = @ForeignKey(name = "fk_classes_school"))

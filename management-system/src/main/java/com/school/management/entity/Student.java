@@ -34,7 +34,7 @@ public class Student extends SoftDeletableEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "class_id", foreignKey = @ForeignKey(name = "fk_students_class"))
-    private Class classEntity;
+    private ClassEntity classEntity;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "section_id", foreignKey = @ForeignKey(name = "fk_students_section"))

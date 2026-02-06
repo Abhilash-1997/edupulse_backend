@@ -23,7 +23,7 @@ public class ClassSection extends SoftDeletableEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "class_id", nullable = false, foreignKey = @ForeignKey(name = "fk_sections_class"))
-    private Class classEntity;
+    private ClassEntity classEntity;
 
     @Column(name = "name", nullable = false)
     private String name;

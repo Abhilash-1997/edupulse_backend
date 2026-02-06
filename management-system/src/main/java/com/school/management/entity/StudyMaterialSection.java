@@ -11,7 +11,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class StudyMaterialSection extends SoftDeletableEntity {
+public class  StudyMaterialSection extends SoftDeletableEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "school_id", nullable = false, foreignKey = @ForeignKey(name = "fk_study_material_sections_school"))
@@ -25,7 +25,7 @@ public class StudyMaterialSection extends SoftDeletableEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "class_id", nullable = false, foreignKey = @ForeignKey(name = "fk_study_material_sections_class"))
-    private Class classEntity;
+    private ClassEntity classEntity;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "section_id", foreignKey = @ForeignKey(name = "fk_study_material_sections_section"))

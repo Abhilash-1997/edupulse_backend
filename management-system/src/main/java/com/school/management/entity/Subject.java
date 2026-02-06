@@ -27,7 +27,7 @@ public class Subject extends SoftDeletableEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "class_id", nullable = false, foreignKey = @ForeignKey(name = "fk_subjects_class"))
-    private Class classEntity;
+    private ClassEntity classEntity;
 
     @Column(name = "name", nullable = false)
     private String name;

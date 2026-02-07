@@ -1,4 +1,4 @@
-package com.school.management.util;
+package com.school.management.config;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;

@@ -12,7 +12,7 @@ import com.school.management.exception.UnauthorizedException;
 import com.school.management.repository.ParentRepository;
 import com.school.management.repository.StudentRepository;
 import com.school.management.repository.UserRepository;
-import com.school.management.config.PasswordUtil;
+import com.school.management.util.PasswordUtil;
 import com.school.management.security.annotation.RequireParent;
 import com.school.management.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;

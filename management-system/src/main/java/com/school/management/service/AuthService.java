@@ -14,7 +14,7 @@ import com.school.management.exception.ResourceNotFoundException;
 import com.school.management.exception.UnauthorizedException;
 import com.school.management.repository.*;
 import com.school.management.security.JwtTokenProvider;
-import com.school.management.config.PasswordUtil;
+import com.school.management.util.PasswordUtil;
 import com.school.management.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +22,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 @Slf4j

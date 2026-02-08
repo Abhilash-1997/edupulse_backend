@@ -33,7 +33,7 @@ public class ParentService {
     private final UserRepository userRepository;
     private final StudentRepository studentRepository;
     private final PasswordUtil passwordUtil;
-    //private final EmailService emailService;
+    private final EmailService emailService;
 
     //================================== CREATE PARENT ===============================================
 
@@ -102,17 +102,17 @@ public class ParentService {
         studentRepository.saveAll(students);
 
         // Send email with raw password
-//        try {
-//            emailService.sendParentAccountEmail(
-//                    school.getName(),
-//                    user.getName(),
-//                    user.getEmail(),
-//                    request.getPassword(),
-//                    studentNames
-//            );
-//        } catch (Exception e) {
-//            log.error("Failed to send parent account email", e);
-//        }
+        try {
+            emailService.sendParentAccountEmail(
+                    school.getName(),
+                    user.getName(),
+                    user.getEmail(),
+                    request.getPassword(),
+                    studentNames
+            );
+        } catch (Exception e) {
+            log.error("Failed to send parent account email", e);
+        }
 
         return mapToParentResponse(parent);
     }

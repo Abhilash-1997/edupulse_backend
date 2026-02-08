@@ -35,7 +35,7 @@ public class AuthService {
     private final ParentRepository parentRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordUtil passwordUtil;
-//    private final EmailService emailService;
+    private final EmailService emailService;
 
     @Transactional
     public AuthResponse registerSchool(RegisterSchoolRequest request) {
@@ -65,17 +65,16 @@ public class AuthService {
                 .build();
         adminUser = userRepository.save(adminUser);
 
-        // Send welcome email
-//        try {
-//            emailService.sendSchoolRegistrationEmail(
-//                    school.getName(),
-//                    adminUser.getName(),
-//                    adminUser.getEmail(),
-//                    school.getId().toString()
-//            );
-//        } catch (Exception e) {
-//            log.error("Failed to send school registration email", e);
-//        }
+        try {
+            emailService.sendSchoolRegistrationEmail(
+                    school.getName(),
+                    adminUser.getName(),
+                    adminUser.getEmail(),
+                    school.getId().toString()
+            );
+        } catch (Exception e) {
+            log.error("Failed to send school registration email", e);
+        }
 
         // Generate JWT token
         String token = jwtTokenProvider.generateToken(adminUser.getId());
@@ -144,18 +143,18 @@ public class AuthService {
         staffProfile = staffProfileRepository.save(staffProfile);
 
         // Send welcome email
-//        try {
-//            emailService.sendStaffCreationEmail(
-//                    school.getName(),
-//                    user.getName(),
-//                    user.getEmail(),
-//                    request.getPassword(),
-//                    request.getDesignation(),
-//                    request.getDepartment()
-//            );
-//        } catch (Exception e) {
-//            log.error("Failed to send staff creation email", e);
-//        }
+        try {
+            emailService.sendStaffCreationEmail(
+                    school.getName(),
+                    user.getName(),
+                    user.getEmail(),
+                    request.getPassword(),
+                    request.getDesignation(),
+                    request.getDepartment()
+            );
+        } catch (Exception e) {
+            log.error("Failed to send staff creation email", e);
+        }
 
         String token = jwtTokenProvider.generateToken(user.getId());
 

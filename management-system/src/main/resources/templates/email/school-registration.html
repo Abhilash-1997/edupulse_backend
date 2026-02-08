@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>School Registration</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+<div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+    <h2 style="color: #4CAF50;">Welcome to [[${appName}]]!</h2>
+
+    <p>Dear [[${adminName}]],</p>
+
+    <p>Congratulations! Your school <strong>[[${schoolName}]]</strong> has been successfully registered.</p>
+
+    <div style="background-color: #f4f4f4; padding: 15px; border-radius: 5px; margin: 20px 0;">
+        <p><strong>School ID:</strong> [[${schoolId}]]</p>
+    </div>
+
+    <p>You can now log in to your admin portal and start managing your school.</p>
+
+    <p>If you have any questions, please don't hesitate to contact our support team.</p>
+
+    <p>Best regards,<br>
+        The [[${appName}]] Team</p>
+</div>
+</body>
+</html>

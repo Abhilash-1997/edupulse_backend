@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Joining Report</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 11pt;
+            line-height: 1.4;
+            color: #333;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 10px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 15px;
+        }
+
+        .school-logo {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            margin-bottom: 10px;
+        }
+
+        .school-name {
+            font-size: 20pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            color: #2c3e50;
+        }
+
+        .school-details {
+            font-size: 9pt;
+            color: #666;
+        }
+
+        .title {
+            text-align: center;
+            font-size: 14pt;
+            font-weight: bold;
+            text-decoration: underline;
+            margin: 20px 0;
+            color: #2c3e50;
+        }
+
+        .ref-date {
+            margin-bottom: 20px;
+            font-size: 10pt;
+        }
+
+        .ref-date table {
+            width: 100%;
+        }
+
+        .ref-date td {
+            width: 50%;
+        }
+
+        .ref-date td:last-child {
+            text-align: right;
+        }
+
+        .recipient-address {
+            margin-bottom: 15px;
+            font-size: 11pt;
+        }
+
+        .subject {
+            font-weight: bold;
+            text-decoration: underline;
+            margin-bottom: 15px;
+        }
+
+        .content {
+            margin-bottom: 20px;
+            text-align: justify;
+        }
+
+        p {
+            margin-bottom: 10px;
+        }
+
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 10pt;
+        }
+
+        .info-table td {
+            padding: 8px;
+            border: 1px solid #ddd;
+        }
+
+        .info-table td:first-child {
+            font-weight: bold;
+            width: 40%;
+            background-color: #f4f4f4;
+        }
+
+        .signature-section {
+            margin-top: 40px;
+        }
+
+        .signature-section table {
+            width: 100%;
+        }
+
+        .signature-section td {
+            width: 50%;
+            text-align: center;
+            vertical-align: top;
+        }
+
+        .sign-block {
+            text-align: center;
+        }
+
+        .footer {
+            margin-top: 30px;
+            font-size: 8pt;
+            text-align: center;
+            color: #888;
+            border-top: 1px solid #eee;
+            padding-top: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <img th:if="${schoolLogo}" th:src="${schoolLogo}" class="school-logo" alt="School Logo" />
+            <div class="school-name" th:text="${schoolName}">School Name</div>
+            <div class="school-details">
+                <span th:text="${schoolAddress} ?: 'Address Line 1, City, State, Zip'">Address</span><br />
+                <span th:text="${schoolEmail} ?: 'contact@school.edu'">Email</span> | <span
+                    th:text="${schoolPhone} ?: '+1 234 567 8900'">Phone</span>
+            </div>
+        </div>
+
+        <div class="title">JOINING REPORT</div>
+
+        <div class="ref-date">
+            <table>
+                <tr>
+                    <td><strong>Ref:</strong> JN/<span th:text="${currentYear}">2024</span>/<span
+                            th:text="${employeeCode}">EMP001</span></td>
+                    <td><strong>Date:</strong> <span th:text="${currentDate}">January 1, 2024</span></td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="recipient-address">
+            To,<br />
+            <strong>The Principal / Director</strong><br />
+            <span th:text="${schoolName}">School Name</span><br />
+            <span th:text="${schoolAddress} ?: ''">Address</span>
+        </div>
+
+        <div class="subject">Subject: Joining Report</div>
+
+        <div class="content">
+            <p>Respected Sir/Madam,</p>
+
+            <p>I, <strong th:text="${staffName}">Staff Name</strong>, am hereby reporting for duty as <strong
+                    th:text="${designation} ?: 'Teacher'">Teacher</strong> in the <strong
+                    th:text="${department} ?: 'Academic'">Academic</strong> Department at <strong
+                    th:text="${schoolName}">School Name</strong>.</p>
+
+            <p>I have joined the institution today, <strong th:text="${currentDate}">January 1, 2024</strong>, as per
+                the terms of my appointment.</p>
+
+            <p><strong>My details are as follows:</strong></p>
+
+            <table class="info-table">
+                <tr>
+                    <td>Employee Code</td>
+                    <td th:text="${employeeCode}">EMP001</td>
+                </tr>
+                <tr>
+                    <td>Name</td>
+                    <td th:text="${staffName}">Staff Name</td>
+                </tr>
+                <tr>
+                    <td>Designation</td>
+                    <td th:text="${designation} ?: 'Teacher'">Teacher</td>
+                </tr>
+                <tr>
+                    <td>Department</td>
+                    <td th:text="${department} ?: 'Academic'">Academic</td>
+                </tr>
+                <tr>
+                    <td>Date of Joining</td>
+                    <td th:text="${joiningDate}">January 1, 2024</td>
+                </tr>
+                <tr>
+                    <td>Email</td>
+                    <td th:text="${staffEmail}">email@example.com</td>
+                </tr>
+                <tr>
+                    <td>Contact Number</td>
+                    <td th:text="${staffPhone} ?: 'N/A'">N/A</td>
+                </tr>
+            </table>
+
+            <p>I hereby declare that I have read and accept all the terms and conditions mentioned in the appointment
+                letter. I shall abide by the rules and regulations of the institution and discharge my duties to the
+                best of my abilities.</p>
+
+            <p>I look forward to contributing positively to the growth and development of <strong
+                    th:text="${schoolName}">School Name</strong>.</p>
+        </div>
+
+        <div class="signature-section">
+            <table>
+                <tr>
+                    <td>
+                        <div class="sign-block">
+                            <p>_________________________</p>
+                            <p><strong th:text="${staffName}">Staff Name</strong></p>
+                            <p th:text="${designation} ?: 'Teacher'">Teacher</p>
+                            <p>Date: <span th:text="${currentDate}">January 1, 2024</span></p>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="sign-block">
+                            <p>_________________________</p>
+                            <p><strong>Verified By</strong></p>
+                            <p>Principal / HR Manager</p>
+                            <p th:text="${schoolName}">School Name</p>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="footer">
+            Computer-generated document. No physical signature required for digital format.
+        </div>
+    </div>
+</body>
+
+</html>

@@ -15,5 +15,23 @@ import java.util.UUID;
 public interface StaffProfileRepository extends BaseRepository<StaffProfile> {
 
     Optional<StaffProfile> findByUser_IdAndDeletedAtIsNull(UUID userId);
+    Optional<StaffProfile> findByIdAndDeletedAtIsNull(UUID id);
+    Optional<StaffProfile> findByIdAndSchool_IdAndDeletedAtIsNull(UUID id, UUID schoolId);
+    boolean existsBySchool_IdAndEmployeeCodeAndDeletedAtIsNull(UUID schoolId, String employeeCode);
+    List<StaffProfile> findBySchool_IdAndDeletedAtIsNull(UUID schoolId);
+    List<StaffProfile> findBySchool_IdAndStatusAndDeletedAtIsNull(UUID schoolId, StaffStatus status);
 
+    @Query("SELECT sp FROM StaffProfile sp WHERE sp.school.id = :schoolId " +
+            "AND sp.status = 'ACTIVE' AND sp.joiningDate <= :date AND sp.deletedAt IS NULL")
+    List<StaffProfile> findActiveStaffBySchoolAndJoinedBeforeDate(
+            @Param("schoolId") UUID schoolId,
+            @Param("date") LocalDate date
+    );
+
+    @Query("SELECT sp FROM StaffProfile sp WHERE sp.school.id = :schoolId " +
+            "AND sp.status = 'ACTIVE' AND sp.id IN :staffIds AND sp.deletedAt IS NULL")
+    List<StaffProfile> findActiveStaffBySchoolAndIds(
+            @Param("schoolId") UUID schoolId,
+            @Param("staffIds") List<UUID> staffIds
+    );
 }

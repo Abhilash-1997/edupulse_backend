@@ -12,53 +12,56 @@ import java.util.UUID;
 @Repository
 public interface StudentRepository extends BaseRepository<Student> {
 
-    Optional<Student> findByIdAndDeletedAtIsNull(UUID id);
-    Optional<Student> findByIdAndSchool_IdAndDeletedAtIsNull(
-            UUID id,
-            UUID schoolId
-    );
+        Optional<Student> findByIdAndDeletedAtIsNull(UUID id);
 
-    Optional<Student> findBySchool_IdAndAdmissionNumberAndDeletedAtIsNull(
-            UUID schoolId,
-            String admissionNumber
-    );
+        Optional<Student> findByIdAndSchool_IdAndDeletedAtIsNull(
+                        UUID id,
+                        UUID schoolId);
 
-    boolean existsBySchool_IdAndAdmissionNumberAndDeletedAtIsNull(UUID schoolId, String admissionNumber);
-    List<Student> findBySchool_IdAndDeletedAtIsNull(UUID schoolId);
-    List<Student> findBySchool_IdAndParent_IdAndDeletedAtIsNull(UUID schoolId, UUID parentId);
-    List<Student> findBySchool_IdAndParent_IdIsNullAndDeletedAtIsNull(UUID schoolId);
-    List<Student> findBySchool_IdAndClassEntity_IdAndDeletedAtIsNull(UUID schoolId, UUID classId);
+        Optional<Student> findBySchool_IdAndAdmissionNumberAndDeletedAtIsNull(
+                        UUID schoolId,
+                        String admissionNumber);
 
-    List<Student> findBySection_IdAndSchool_IdAndDeletedAtIsNull(UUID sectionId, UUID schoolId);
+        boolean existsBySchool_IdAndAdmissionNumberAndDeletedAtIsNull(UUID schoolId, String admissionNumber);
 
-    List<Student> findByParent_IdAndDeletedAtIsNull(UUID parentId);
+        List<Student> findBySchool_IdAndDeletedAtIsNull(UUID schoolId);
 
-    long countBySchool_IdAndDeletedAtIsNull(UUID schoolId);   //for count
+        List<Student> findBySchool_IdAndParent_IdAndDeletedAtIsNull(UUID schoolId, UUID parentId);
 
-    @Query("""
-        SELECT s
-        FROM Student s
-        WHERE s.school.id = :schoolId
-          AND s.deletedAt IS NULL
-        ORDER BY s.createdAt DESC
-    """)
-    List<Student> findTop5RecentBySchoolId(@Param("schoolId") UUID schoolId);
+        List<Student> findBySchool_IdAndParent_IdIsNullAndDeletedAtIsNull(UUID schoolId);
 
+        List<Student> findBySchool_IdAndClassEntity_IdAndDeletedAtIsNull(UUID schoolId, UUID classId);
 
-    //FOR id CARD GENERATION of students
-    @Query("""
-        SELECT s FROM Student s
-        LEFT JOIN FETCH s.school
-        LEFT JOIN FETCH s.parent p
-        LEFT JOIN FETCH p.user
-        LEFT JOIN FETCH s.classEntity
-        LEFT JOIN FETCH s.section
-        WHERE s.id = :id 
-          AND s.school.id = :schoolId 
-          AND s.deletedAt IS NULL
-    """)
-    Optional<Student> findByIdAndSchoolIdWithDetails(
-            @Param("id") UUID id,
-            @Param("schoolId") UUID schoolId
-    );
+        List<Student> findBySection_IdAndSchool_IdAndDeletedAtIsNull(UUID sectionId, UUID schoolId);
+
+        List<Student> findByParent_IdAndDeletedAtIsNull(UUID parentId);
+
+        long countBySchool_IdAndDeletedAtIsNull(UUID schoolId); // for count
+
+        long countByClassEntity_IdAndDeletedAtIsNull(UUID classId); // for class count
+
+        @Query("""
+                            SELECT s
+                            FROM Student s
+                            WHERE s.school.id = :schoolId
+                              AND s.deletedAt IS NULL
+                            ORDER BY s.createdAt DESC
+                        """)
+        List<Student> findTop5RecentBySchoolId(@Param("schoolId") UUID schoolId);
+
+        // FOR id CARD GENERATION of students
+        @Query("""
+                            SELECT s FROM Student s
+                            LEFT JOIN FETCH s.school
+                            LEFT JOIN FETCH s.parent p
+                            LEFT JOIN FETCH p.user
+                            LEFT JOIN FETCH s.classEntity
+                            LEFT JOIN FETCH s.section
+                            WHERE s.id = :id
+                              AND s.school.id = :schoolId
+                              AND s.deletedAt IS NULL
+                        """)
+        Optional<Student> findByIdAndSchoolIdWithDetails(
+                        @Param("id") UUID id,
+                        @Param("schoolId") UUID schoolId);
 }

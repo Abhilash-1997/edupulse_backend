@@ -18,7 +18,9 @@ public interface UserRepository extends BaseRepository<User> {
 
     Optional<User> findByIdAndDeletedAtIsNull(UUID id);
 
-    Optional<User> findByIdAndSchoolIdAndDeletedAtIsNull(UUID id, UUID schoolId);
+    Optional<User> findByIdAndSchool_IdAndDeletedAtIsNull(UUID id, UUID schoolId);
 
     boolean existsByEmailAndDeletedAtIsNull(String email);
+
+    List<User> findBySchool_IdAndRoleAndIsActiveTrueAndDeletedAtIsNull(UUID schoolId, UserRole role);
 }

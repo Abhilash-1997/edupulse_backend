@@ -34,4 +34,8 @@ public interface StaffProfileRepository extends BaseRepository<StaffProfile> {
             @Param("schoolId") UUID schoolId,
             @Param("staffIds") List<UUID> staffIds
     );
+
+    @Query("""
+     SELECT sp FROM StaffProfile sp JOIN FETCH sp.user u WHERE sp.id = :id AND sp.deletedAt IS NULL""")
+    Optional<StaffProfile> findByIdWithUser(@Param("id") UUID id);
 }

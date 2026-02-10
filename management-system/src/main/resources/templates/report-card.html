@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Report Card</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 11pt;
+            line-height: 1.4;
+            color: #333;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 10px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 12px;
+        }
+        .school-logo {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            margin-bottom: 8px;
+        }
+        .school-name {
+            font-size: 20pt;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 3px;
+            color: #2c3e50;
+        }
+        .school-details {
+            font-size: 9pt;
+            color: #666;
+        }
+        .report-title {
+            text-align: center;
+            font-size: 14pt;
+            font-weight: bold;
+            margin: 15px 0;
+            text-decoration: underline;
+            color: #2c3e50;
+        }
+        .student-info {
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            background-color: #fafafa;
+        }
+        .student-info table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .student-info td {
+            padding: 3px 8px;
+            font-size: 10pt;
+        }
+        .student-info td:first-child {
+            font-weight: bold;
+            width: 25%;
+        }
+        .marks-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 10pt;
+        }
+        .marks-table th, .marks-table td {
+            border: 1px solid #ccc;
+            padding: 6px 10px;
+        }
+        .marks-table th {
+            background-color: #2c3e50;
+            color: white;
+            text-align: center;
+            font-weight: bold;
+        }
+        .marks-table td {
+            text-align: center;
+        }
+        .marks-table td:nth-child(2) {
+            text-align: left;
+        }
+        .marks-table .total-row {
+            font-weight: bold;
+            background-color: #ecf0f1;
+        }
+        .summary-section {
+            margin: 15px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background-color: #fafafa;
+        }
+        .summary-section table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .summary-section td {
+            padding: 4px 8px;
+            font-size: 10pt;
+        }
+        .summary-section td:first-child {
+            font-weight: bold;
+            width: 30%;
+        }
+        .grade-highlight {
+            font-size: 14pt;
+            font-weight: bold;
+            color: #27ae60;
+        }
+        .grade-fail {
+            color: #e74c3c;
+        }
+        .signature-section {
+            margin-top: 40px;
+        }
+        .signature-section table {
+            width: 100%;
+        }
+        .signature-section td {
+            text-align: center;
+            padding-top: 40px;
+            font-size: 10pt;
+        }
+        .signature-line {
+            border-top: 1px solid #333;
+            display: inline-block;
+            width: 150px;
+            margin-bottom: 5px;
+        }
+        .footer {
+            margin-top: 25px;
+            font-size: 8pt;
+            text-align: center;
+            color: #888;
+            border-top: 1px solid #eee;
+            padding-top: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- School Header -->
+        <div class="header">
+            <img th:if="${schoolLogo}" th:src="${schoolLogo}" class="school-logo" alt="School Logo"/>
+            <div class="school-name" th:text="${schoolName}">School Name</div>
+            <div class="school-details">
+                <span th:text="${schoolAddress} ?: ''">Address</span><br/>
+                <span th:if="${schoolBoard}">Board: <span th:text="${schoolBoard}">CBSE</span></span>
+                <span th:if="${academicYear}"> | Academic Year: <span th:text="${academicYear}">2024-25</span></span>
+            </div>
+        </div>
+
+        <!-- Report Card Title -->
+        <div class="report-title">
+            REPORT CARD - <span th:text="${examName}">Exam Name</span>
+        </div>
+
+        <!-- Student Information -->
+        <div class="student-info">
+            <table>
+                <tr>
+                    <td>Student Name:</td>
+                    <td th:text="${studentName}">Student Name</td>
+                    <td>Admission No:</td>
+                    <td th:text="${admissionNumber}">ADM001</td>
+                </tr>
+                <tr>
+                    <td>Class:</td>
+                    <td th:text="${className}">Class X - A</td>
+                    <td>Date of Birth:</td>
+                    <td th:text="${studentDob}">01/01/2010</td>
+                </tr>
+                <tr>
+                    <td>Guardian Name:</td>
+                    <td th:text="${guardianName}">Guardian</td>
+                    <td>Contact:</td>
+                    <td th:text="${guardianPhone}">+91 XXXXXXXXXX</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Marks Table -->
+        <table class="marks-table">
+            <thead>
+                <tr>
+                    <th>S.No</th>
+                    <th>Subject</th>
+                    <th>Code</th>
+                    <th>Marks Obtained</th>
+                    <th>Max Marks</th>
+                    <th>Percentage</th>
+                    <th>Grade</th>
+                    <th>Remarks</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="subject, iter : ${subjects}">
+                    <td th:text="${iter.index + 1}">1</td>
+                    <td th:text="${subject.subjectName}">Subject</td>
+                    <td th:text="${subject.subjectCode}">CODE</td>
+                    <td th:text="${subject.marksObtained}">0</td>
+                    <td th:text="${subject.maxMarks}">100</td>
+                    <td><span th:text="${subject.percentage}">0</span>%</td>
+                    <td th:text="${subject.grade}">-</td>
+                    <td th:text="${subject.remarks} ?: '-'">-</td>
+                </tr>
+                <tr class="total-row">
+                    <td colspan="3">TOTAL</td>
+                    <td th:text="${totalMarksObtained}">0</td>
+                    <td th:text="${totalMaxMarks}">0</td>
+                    <td><span th:text="${overallPercentage}">0</span>%</td>
+                    <td th:text="${overallGrade}">-</td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Summary Section -->
+        <div class="summary-section">
+            <table>
+                <tr>
+                    <td>Overall Percentage:</td>
+                    <td><span th:text="${overallPercentage}">0</span>%</td>
+                </tr>
+                <tr>
+                    <td>Overall Grade:</td>
+                    <td>
+                        <span th:text="${overallGrade}"
+                              th:class="${overallGrade == 'F' ? 'grade-highlight grade-fail' : 'grade-highlight'}">-</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Rank:</td>
+                    <td><span th:text="${rank}">-</span> out of <span th:text="${totalStudents}">-</span> students</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Signature Section -->
+        <div class="signature-section">
+            <table>
+                <tr>
+                    <td>
+                        <div class="signature-line"></div><br/>
+                        Class Teacher
+                    </td>
+                    <td>
+                        <div class="signature-line"></div><br/>
+                        Principal
+                    </td>
+                    <td>
+                        <div class="signature-line"></div><br/>
+                        Parent/Guardian
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            Computer-generated document. No physical signature required for digital format.
+        </div>
+    </div>
+</body>
+</html>

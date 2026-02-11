@@ -22,5 +22,20 @@ public interface UserRepository extends BaseRepository<User> {
 
     boolean existsByEmailAndDeletedAtIsNull(String email);
 
+    @Query("SELECT u FROM User u WHERE u.school.id = :schoolId AND u.id != :currentUserId " +
+            "AND u.deletedAt IS NULL ORDER BY u.name ASC")
+    List<User> findChatUsersExcludingCurrent(
+            @Param("schoolId") UUID schoolId,
+            @Param("currentUserId") UUID currentUserId
+    );
+
+    @Query("SELECT u FROM User u WHERE u.school.id = :schoolId AND u.id != :currentUserId " +
+            "AND u.name LIKE %:search% AND u.deletedAt IS NULL ORDER BY u.name ASC")
+    List<User> findChatUsersExcludingCurrentWithSearch(
+            @Param("schoolId") UUID schoolId,
+            @Param("currentUserId") UUID currentUserId,
+            @Param("search") String search
+    );
+
     List<User> findBySchool_IdAndRoleAndIsActiveTrueAndDeletedAtIsNull(UUID schoolId, UserRole role);
 }

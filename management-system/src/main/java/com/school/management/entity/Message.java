@@ -2,6 +2,7 @@ package com.school.management.entity;
 
 import com.school.management.constant.MessageStatus;
 import com.school.management.constant.MessageType;
+import com.school.management.entity.base.SoftDeletableEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -18,12 +19,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Message {
-
-    @Id
-    @GeneratedValue(generator = "UUID")
-    @Column(name = "id", updatable = false, nullable = false, columnDefinition = "CHAR(36)")
-    private UUID id;
+public class Message extends SoftDeletableEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "conversation_id", nullable = false, foreignKey = @ForeignKey(name = "fk_messages_conversation"))
@@ -49,10 +45,6 @@ public class Message {
     @Column(name = "status", nullable = false)
     @Builder.Default
     private MessageStatus status = MessageStatus.SENT;
-
-    @CreatedDate
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;

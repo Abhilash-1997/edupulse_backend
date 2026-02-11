@@ -2,10 +2,12 @@ package com.school.management.service;
 
 import com.lowagie.text.DocumentException;
 import com.school.management.dto.response.PayrollResponse;
+import com.school.management.entity.FeePayment;
 import com.school.management.entity.StaffProfile;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import org.xhtmlrenderer.pdf.ITextRenderer;
@@ -54,7 +56,6 @@ public class PdfGenerationService {
             throw new RuntimeException("Failed to generate PDF", e);
         }
     }
-
 
     public byte[] generatePayslip(PayrollResponse payroll, StaffProfile staff) {
         log.info("Generating payslip for staff: {} for {}/{}",
@@ -138,8 +139,8 @@ public class PdfGenerationService {
 
         // Payment Information
         variables.put("status", payroll.getStatus().name());
-        variables.put("paymentDate", payroll.getPaymentDate() != null ?
-                formatDate(payroll.getPaymentDate()) : "Not Paid");
+        variables.put("paymentDate",
+                payroll.getPaymentDate() != null ? formatDate(payroll.getPaymentDate()) : "Not Paid");
         variables.put("generatedDate", formatDate(LocalDate.now()));
 
         return generatePdf("pdf/payslip", variables);
@@ -190,9 +191,10 @@ public class PdfGenerationService {
             return "Zero";
         }
 
-        String[] ones = {"", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"};
-        String[] tens = {"", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"};
-        String[] teens = {"Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"};
+        String[] ones = { "", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine" };
+        String[] tens = { "", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety" };
+        String[] teens = { "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen",
+                "Eighteen", "Nineteen" };
 
         if (number < 10) {
             return ones[(int) number];
@@ -201,14 +203,75 @@ public class PdfGenerationService {
         } else if (number < 100) {
             return tens[(int) (number / 10)] + (number % 10 != 0 ? " " + ones[(int) (number % 10)] : "");
         } else if (number < 1000) {
-            return ones[(int) (number / 100)] + " Hundred" + (number % 100 != 0 ? " " + convertNumberToWords(number % 100) : "");
+            return ones[(int) (number / 100)] + " Hundred"
+                    + (number % 100 != 0 ? " " + convertNumberToWords(number % 100) : "");
         } else if (number < 100000) {
-            return convertNumberToWords(number / 1000) + " Thousand" + (number % 1000 != 0 ? " " + convertNumberToWords(number % 1000) : "");
+            return convertNumberToWords(number / 1000) + " Thousand"
+                    + (number % 1000 != 0 ? " " + convertNumberToWords(number % 1000) : "");
         } else if (number < 10000000) {
-            return convertNumberToWords(number / 100000) + " Lakh" + (number % 100000 != 0 ? " " + convertNumberToWords(number % 100000) : "");
+            return convertNumberToWords(number / 100000) + " Lakh"
+                    + (number % 100000 != 0 ? " " + convertNumberToWords(number % 100000) : "");
         } else {
-            return convertNumberToWords(number / 10000000) + " Crore" + (number % 10000000 != 0 ? " " + convertNumberToWords(number % 10000000) : "");
+            return convertNumberToWords(number / 10000000) + " Crore"
+                    + (number % 10000000 != 0 ? " " + convertNumberToWords(number % 10000000) : "");
         }
     }
 
+    @Transactional(readOnly = true)
+    public byte[] generateFeeReceipt(FeePayment feePayment) {
+        log.info("Generating fee receipt for payment ID: {}", feePayment.getId());
+
+        Map<String, Object> variables = new HashMap<>();
+
+        // School Information
+        variables.put("schoolName", feePayment.getSchool().getName());
+        variables.put("schoolAddress", feePayment.getSchool().getAddress() != null
+                ? feePayment.getSchool().getAddress()
+                : "");
+
+        // Student Information
+        variables.put("studentName", feePayment.getStudent().getName());
+        variables.put("admissionNumber", feePayment.getStudent().getAdmissionNumber());
+
+        String className = "N/A";
+        if (feePayment.getStudent().getClassEntity() != null) {
+            className = feePayment.getStudent().getClassEntity().getName();
+            if (feePayment.getStudent().getSection() != null) {
+                className += " - " + feePayment.getStudent().getSection().getName();
+            }
+        }
+        variables.put("className", className);
+
+        // Guardian Information
+        if (feePayment.getStudent().getParent() != null) {
+            variables.put("guardianName", feePayment.getStudent().getParent().getGuardianName());
+            if (feePayment.getStudent().getParent().getUser() != null) {
+                variables.put("contact", feePayment.getStudent().getParent().getUser().getPhone());
+            }
+        } else {
+            variables.put("guardianName", "N/A");
+            variables.put("contact", "N/A");
+        }
+
+        // Fee Details
+        variables.put("feeName", feePayment.getFeeStructure().getName());
+        variables.put("feeAmount", formatCurrency(feePayment.getFeeStructure().getAmount()));
+        variables.put("frequency", feePayment.getFeeStructure().getFrequency().name());
+
+        // Payment Details
+        variables.put("amountPaid", formatCurrency(feePayment.getAmountPaid()));
+        variables.put("amountPaidInWords", convertToWords(feePayment.getAmountPaid()));
+        variables.put("paymentDate", formatDate(feePayment.getPaymentDate()));
+        variables.put("paymentMethod", feePayment.getPaymentMethod().name());
+        variables.put("transactionId", feePayment.getTransactionId() != null
+                ? feePayment.getTransactionId()
+                : "N/A");
+        variables.put("paymentStatus", feePayment.getStatus().name());
+
+        // Receipt metadata
+        variables.put("receiptNumber", "RCP-" + feePayment.getId().toString().substring(0, 8).toUpperCase());
+        variables.put("generatedDate", formatDate(LocalDate.now()));
+
+        return generatePdf("pdf/fee-receipt", variables);
+    }
 }

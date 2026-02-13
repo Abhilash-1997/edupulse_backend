@@ -37,6 +37,11 @@ public class GcsService {
         return objectName;
     }
 
+    public void deleteFile(String objectName) {
+        storage.delete(bucketName, objectName);
+    }
+
+
     public String generateSignedUrl(String objectName) {
         BlobInfo blobInfo = BlobInfo.newBuilder(bucketName, objectName).build();
         URL url = storage.signUrl(blobInfo, 15, TimeUnit.MINUTES,

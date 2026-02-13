@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "galleries")
@@ -27,4 +29,8 @@ public class Gallery extends SoftDeletableEntity {
 
     @Column(name = "event_date")
     private LocalDate eventDate;
+
+    @OneToMany(mappedBy = "gallery", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<GalleryImage> images = new ArrayList<>();
+
 }

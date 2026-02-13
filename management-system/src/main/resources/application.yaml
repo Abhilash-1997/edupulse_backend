@@ -57,6 +57,10 @@ server:
   servlet:
     context-path: /api
 
+gcp:
+  bucket-name: school-management-abhilash
+
+
 # JWT Configuration
 jwt:
   secret: ${JWT_SECRET:your-secret-key-change-this-in-production}

@@ -3,10 +3,7 @@ package com.school.management.service;
 import com.school.management.constant.SchoolStatus;
 import com.school.management.constant.StaffStatus;
 import com.school.management.constant.UserRole;
-import com.school.management.dto.request.LoginRequest;
-import com.school.management.dto.request.RegisterSchoolRequest;
-import com.school.management.dto.request.RegisterStaffRequest;
-import com.school.management.dto.request.UpdatePasswordRequest;
+import com.school.management.dto.request.*;
 import com.school.management.dto.response.*;
 import com.school.management.entity.*;
 import com.school.management.exception.BadRequestException;
@@ -21,7 +18,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.SecureRandom;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Slf4j
@@ -33,9 +32,13 @@ public class AuthService {
     private final SchoolRepository schoolRepository;
     private final StaffProfileRepository staffProfileRepository;
     private final ParentRepository parentRepository;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final JwtTokenProvider jwtTokenProvider;
     private final PasswordUtil passwordUtil;
     private final EmailService emailService;
+
+    private static final int OTP_EXPIRY_MINUTES = 15;
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     @Transactional
     public AuthResponse registerSchool(RegisterSchoolRequest request) {
@@ -70,8 +73,7 @@ public class AuthService {
                     school.getName(),
                     adminUser.getName(),
                     adminUser.getEmail(),
-                    school.getId().toString()
-            );
+                    school.getId().toString());
         } catch (Exception e) {
             log.error("Failed to send school registration email", e);
         }
@@ -150,8 +152,7 @@ public class AuthService {
                     user.getEmail(),
                     request.getPassword(),
                     request.getDesignation(),
-                    request.getDepartment()
-            );
+                    request.getDepartment());
         } catch (Exception e) {
             log.error("Failed to send staff creation email", e);
         }
@@ -200,6 +201,79 @@ public class AuthService {
         userRepository.save(user);
     }
 
+    @Transactional
+    public void forgotPassword(ForgotPasswordRequest request) {
+        // Always return success to avoid leaking whether an account exists
+        User user = userRepository.findByEmailAndDeletedAtIsNull(request.getEmail())
+                .orElse(null);
+
+        if (user == null) {
+            log.warn("Forgot password requested for non-existent email: {}", request.getEmail());
+            return;
+        }
+
+        // Delete any existing tokens for this user
+        passwordResetTokenRepository.deleteByUser(user);
+
+        // Generate 6-digit OTP
+        String otp = generateOtp();
+
+        // Create and save token
+        PasswordResetToken resetToken = PasswordResetToken.builder()
+                .user(user)
+                .token(otp)
+                .expiryDate(LocalDateTime.now().plusMinutes(OTP_EXPIRY_MINUTES))
+                .build();
+        passwordResetTokenRepository.save(resetToken);
+
+        // Send email
+        try {
+            String schoolName = user.getSchool() != null ? user.getSchool().getName() : "EduPulse";
+            emailService.sendPasswordResetEmail(
+                    user.getEmail(),
+                    user.getName(),
+                    otp,
+                    schoolName);
+        } catch (Exception e) {
+            log.error("Failed to send password reset email to: {}", user.getEmail(), e);
+        }
+
+        log.info("Password reset OTP generated for user: {}", user.getEmail());
+    }
+
+    @Transactional
+    public void resetPassword(ResetPasswordRequest request) {
+        // Find the token
+        PasswordResetToken resetToken = passwordResetTokenRepository.findByTokenAndUsedFalse(request.getToken())
+                .orElseThrow(() -> new BadRequestException("Invalid or expired OTP code"));
+
+        // Check if token is expired
+        if (resetToken.isExpired()) {
+            throw new BadRequestException("OTP code has expired. Please request a new one");
+        }
+
+        // Verify the email matches
+        User user = resetToken.getUser();
+        if (!user.getEmail().equalsIgnoreCase(request.getEmail())) {
+            throw new BadRequestException("Invalid or expired OTP code");
+        }
+
+        // Update password
+        user.setPasswordHash(passwordUtil.hashPassword(request.getNewPassword()));
+        userRepository.save(user);
+
+        // Mark token as used
+        resetToken.setUsed(true);
+        passwordResetTokenRepository.save(resetToken);
+
+        log.info("Password successfully reset for user: {}", user.getEmail());
+    }
+
+    private String generateOtp() {
+        int otp = 100000 + SECURE_RANDOM.nextInt(900000);
+        return String.valueOf(otp);
+    }
+
     private AuthResponse buildAuthResponse(String token, User user, School school) {
         AuthResponse.AuthResponseBuilder builder = AuthResponse.builder()
                 .token(token)
@@ -239,7 +313,8 @@ public class AuthService {
     }
 
     private SchoolResponse mapToSchoolResponse(School school) {
-        if (school == null) return null;
+        if (school == null)
+            return null;
 
         return SchoolResponse.builder()
                 .id(school.getId())

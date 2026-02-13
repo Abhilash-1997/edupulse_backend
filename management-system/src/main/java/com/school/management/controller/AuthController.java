@@ -1,9 +1,7 @@
 package com.school.management.controller;
 
-import com.school.management.dto.request.LoginRequest;
-import com.school.management.dto.request.RegisterSchoolRequest;
-import com.school.management.dto.request.RegisterStaffRequest;
-import com.school.management.dto.request.UpdatePasswordRequest;
+import com.school.management.dto.request.*;
+import com.school.management.dto.response.ApiResponse;
 import com.school.management.dto.response.AuthResponse;
 import com.school.management.service.AuthService;
 import jakarta.validation.Valid;
@@ -43,5 +41,17 @@ public class AuthController {
     public ResponseEntity<AuthResponse> registerStaff(@Valid @RequestBody RegisterStaffRequest request) {
         AuthResponse response = authService.registerStaff(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ApiResponse<Void>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        authService.forgotPassword(request);
+        return ResponseEntity.ok(ApiResponse.success("If the email exists, a password reset OTP has been sent", null));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<ApiResponse<Void>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        authService.resetPassword(request);
+        return ResponseEntity.ok(ApiResponse.success("Password has been reset successfully", null));
     }
 }

@@ -1,5 +1,6 @@
 package com.school.management.entity;
 
+import com.school.management.entity.base.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
@@ -25,13 +26,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class BusLocation {
-
-    @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
-    @Column(name = "id", updatable = false, nullable = false, columnDefinition = "CHAR(36)")
-    private UUID id;
+public class BusLocation extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "bus_id", nullable = false, foreignKey = @ForeignKey(name = "fk_bus_locations_bus"))
@@ -60,11 +55,4 @@ public class BusLocation {
     @Builder.Default
     private LocalDateTime timestamp = LocalDateTime.now();
 
-    @CreatedDate
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    @LastModifiedDate
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
 }

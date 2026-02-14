@@ -70,6 +70,13 @@ jwt:
 file:
   upload-dir: ${FILE_UPLOAD_DIR:./uploads}
 
+# Video Processing (FFmpeg)
+video:
+  ffmpeg-path: ${FFMPEG_PATH:ffmpeg}
+  ffprobe-path: ${FFPROBE_PATH:ffprobe}
+  segment-duration: 6          # HLS segment length in seconds
+  process-timeout-minutes: 30  # Max time for FFmpeg to finish
+
 # CORS Configuration
 cors:
   allowed-origins: ${CORS_ORIGINS:http://localhost:3000,http://localhost:5173}

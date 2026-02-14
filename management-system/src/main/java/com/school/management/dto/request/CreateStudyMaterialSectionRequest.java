@@ -29,4 +29,5 @@ public class CreateStudyMaterialSectionRequest {
     private UUID subjectId;
 
     private Boolean isPublished;
+    private Integer order;
 }

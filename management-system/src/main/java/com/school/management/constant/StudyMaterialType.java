@@ -3,5 +3,8 @@ package com.school.management.constant;
 public enum StudyMaterialType {
     VIDEO,
     PDF,
-    PPT
+    PPT,
+    DOCUMENT,
+    PRESENTATION,
+    OTHER
 }

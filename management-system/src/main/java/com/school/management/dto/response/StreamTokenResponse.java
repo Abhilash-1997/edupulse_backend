@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -20,7 +22,7 @@ public class StreamTokenResponse {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class MaterialInfo {
-        private String id;
+        private UUID id;
         private String title;
         private String description;
         private Integer duration;

@@ -20,6 +20,7 @@ public class AttendanceResponse {
     private AttendanceStatus status;
     private UUID studentId;
     private String studentName;
+    private String admissionNumber;
     private UUID recordedBy;
     private Boolean isLocked;
 }

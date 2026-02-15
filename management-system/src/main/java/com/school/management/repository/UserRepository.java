@@ -14,28 +14,33 @@ import java.util.UUID;
 @Repository
 public interface UserRepository extends BaseRepository<User> {
 
-    Optional<User> findByEmailAndDeletedAtIsNull(String email);
+        Optional<User> findByEmailAndDeletedAtIsNull(String email);
 
-    Optional<User> findByIdAndDeletedAtIsNull(UUID id);
+        Optional<User> findByIdAndDeletedAtIsNull(UUID id);
 
-    Optional<User> findByIdAndSchool_IdAndDeletedAtIsNull(UUID id, UUID schoolId);
+        Optional<User> findByIdAndSchool_IdAndDeletedAtIsNull(UUID id, UUID schoolId);
 
-    boolean existsByEmailAndDeletedAtIsNull(String email);
+        boolean existsByEmailAndDeletedAtIsNull(String email);
 
-    @Query("SELECT u FROM User u WHERE u.school.id = :schoolId AND u.id != :currentUserId " +
-            "AND u.deletedAt IS NULL ORDER BY u.name ASC")
-    List<User> findChatUsersExcludingCurrent(
-            @Param("schoolId") UUID schoolId,
-            @Param("currentUserId") UUID currentUserId
-    );
+        @Query("SELECT u FROM User u WHERE u.school.id = :schoolId AND u.id != :currentUserId " +
+                        "AND u.deletedAt IS NULL ORDER BY u.name ASC")
+        List<User> findChatUsersExcludingCurrent(
+                        @Param("schoolId") UUID schoolId,
+                        @Param("currentUserId") UUID currentUserId);
 
-    @Query("SELECT u FROM User u WHERE u.school.id = :schoolId AND u.id != :currentUserId " +
-            "AND u.name LIKE %:search% AND u.deletedAt IS NULL ORDER BY u.name ASC")
-    List<User> findChatUsersExcludingCurrentWithSearch(
-            @Param("schoolId") UUID schoolId,
-            @Param("currentUserId") UUID currentUserId,
-            @Param("search") String search
-    );
+        @Query("SELECT u FROM User u WHERE u.school.id = :schoolId AND u.id != :currentUserId " +
+                        "AND u.name LIKE %:search% AND u.deletedAt IS NULL ORDER BY u.name ASC")
+        List<User> findChatUsersExcludingCurrentWithSearch(
+                        @Param("schoolId") UUID schoolId,
+                        @Param("currentUserId") UUID currentUserId,
+                        @Param("search") String search);
 
-    List<User> findBySchool_IdAndRoleAndIsActiveTrueAndDeletedAtIsNull(UUID schoolId, UserRole role);
+        List<User> findBySchool_IdAndRoleAndIsActiveTrueAndDeletedAtIsNull(UUID schoolId, UserRole role);
+
+        long countBySchool_IdAndRoleAndDeletedAtIsNull(UUID schoolId, UserRole role);
+
+        long countByDeletedAtIsNull();
+
+        @Query("SELECT u.email FROM User u WHERE u.school.id = :schoolId AND u.role = 'SCHOOL_ADMIN' AND u.deletedAt IS NULL")
+        Optional<String> findAdminEmailBySchoolId(@Param("schoolId") UUID schoolId);
 }

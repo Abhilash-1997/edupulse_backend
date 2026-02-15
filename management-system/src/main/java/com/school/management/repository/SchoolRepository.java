@@ -13,4 +13,9 @@ import java.util.UUID;
 public interface SchoolRepository extends BaseRepository<School> {
     Optional<School> findByIdAndDeletedAtIsNull(UUID id);
 
+    long countByDeletedAtIsNull();
+
+    List<School> findAllByDeletedAtIsNullOrderByNameAsc();
+
+    List<School> findTop5ByDeletedAtIsNullOrderByCreatedAtDesc();
 }

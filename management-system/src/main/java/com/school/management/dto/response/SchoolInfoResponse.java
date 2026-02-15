@@ -18,7 +18,9 @@ public class SchoolInfoResponse {
     private UUID id;
     private String name;
     private String address;
+    private String logo;
     private String board;
+    private String academicYear;
     private SchoolStatus status;
     private String schoolAdminEmail;
     private Long studentsCount;

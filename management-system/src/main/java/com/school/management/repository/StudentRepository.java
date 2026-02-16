@@ -35,6 +35,8 @@ public interface StudentRepository extends BaseRepository<Student> {
 
   List<Student> findBySection_IdAndSchool_IdAndDeletedAtIsNull(UUID sectionId, UUID schoolId);
 
+  List<Student> findBySection_IdAndSchool_IdAndDeletedAtIsNullOrderByNameAsc(UUID sectionId, UUID schoolId);
+
   List<Student> findByParent_IdAndDeletedAtIsNull(UUID parentId);
 
   long countBySchool_IdAndDeletedAtIsNull(UUID schoolId); // for count

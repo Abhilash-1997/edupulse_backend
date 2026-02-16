@@ -66,7 +66,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         // Public endpoints (no authentication required)
                         .requestMatchers(
-                                "/auth/**",
+                                "/auth/login",
+                                "/auth/forgot-password",
+                                "/auth/reset-password",
                                 "/auth/login",
                                 "/study-materials/hls/**",
                                 "/uploads/**",

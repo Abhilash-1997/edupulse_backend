@@ -43,4 +43,6 @@ public interface UserRepository extends BaseRepository<User> {
 
         @Query("SELECT u.email FROM User u WHERE u.school.id = :schoolId AND u.role = 'SCHOOL_ADMIN' AND u.deletedAt IS NULL")
         Optional<String> findAdminEmailBySchoolId(@Param("schoolId") UUID schoolId);
+
+    boolean existsByRoleAndDeletedAtIsNull(UserRole userRole);
 }

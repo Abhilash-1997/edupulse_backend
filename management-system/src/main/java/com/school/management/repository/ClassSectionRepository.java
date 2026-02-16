@@ -12,20 +12,27 @@ import java.util.UUID;
 @Repository
 public interface ClassSectionRepository extends BaseRepository<ClassSection> {
 
-    Optional<ClassSection> findByIdAndDeletedAtIsNull(UUID id);
+        Optional<ClassSection> findByIdAndDeletedAtIsNull(UUID id);
 
-    Optional<ClassSection> findByClassTeacher_IdAndDeletedAtIsNull(UUID classTeacherId);
+        Optional<ClassSection> findByClassTeacher_IdAndDeletedAtIsNull(UUID classTeacherId);
 
-    List<ClassSection> findByClassEntity_IdAndDeletedAtIsNull(UUID classId);
+        List<ClassSection> findByClassEntity_IdAndDeletedAtIsNull(UUID classId);
 
-    @Query("SELECT cs FROM ClassSection cs JOIN cs.classEntity c " +
-            "WHERE c.school.id = :schoolId AND cs.deletedAt IS NULL")
-    List<ClassSection> findBySchoolId(@Param("schoolId") UUID schoolId);
+        @Query("SELECT cs FROM ClassSection cs JOIN cs.classEntity c " +
+                        "WHERE c.school.id = :schoolId AND cs.deletedAt IS NULL")
+        List<ClassSection> findBySchoolId(@Param("schoolId") UUID schoolId);
 
-    @Query("SELECT cs FROM ClassSection cs JOIN cs.classEntity c " +
-            "WHERE c.name = :className AND c.school.id = :schoolId AND cs.deletedAt IS NULL")
-    List<ClassSection> findByClassNameAndSchoolId(
-            @Param("className") String className,
-            @Param("schoolId") UUID schoolId
-    );
+        @Query("SELECT cs FROM ClassSection cs JOIN cs.classEntity c " +
+                        "WHERE c.name = :className AND c.school.id = :schoolId AND cs.deletedAt IS NULL")
+        List<ClassSection> findByClassNameAndSchoolId(
+                        @Param("className") String className,
+                        @Param("schoolId") UUID schoolId);
+
+        @Query("SELECT cs FROM ClassSection cs JOIN cs.classEntity c " +
+                        "WHERE cs.name = :sectionName AND c.name = :className " +
+                        "AND c.school.id = :schoolId AND cs.deletedAt IS NULL")
+        Optional<ClassSection> findByNameAndClassNameAndSchoolId(
+                        @Param("sectionName") String sectionName,
+                        @Param("className") String className,
+                        @Param("schoolId") UUID schoolId);
 }

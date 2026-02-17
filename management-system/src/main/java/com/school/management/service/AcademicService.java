@@ -289,7 +289,6 @@ public class AcademicService {
                 User teacher = userRepository.findByIdAndSchool_IdAndDeletedAtIsNull(
                                 request.getTeacherId(), schoolId)
                                 .orElseThrow(() -> new ResourceNotFoundException("Teacher not found"));
-
                 // Parse times
                 LocalTime startTime = LocalTime.parse(request.getStartTime());
                 LocalTime endTime = LocalTime.parse(request.getEndTime());
@@ -498,6 +497,17 @@ public class AcademicService {
                                 .endTime(timetable.getEndTime())
                                 .classroom(timetable.getClassroom())
                                 .subject(mapToSubjectResponse(timetable.getSubject()))
-                                .build();
+                                .teacher(timetable.getTeacher() != null ? mapToUserResponse(timetable.getTeacher()) : null)
+                                .section(timetable.getSection() != null ? mapToClassSectionResponse(timetable.getSection()) : null)
+
+                        .build();
         }
+
+    private UserResponse mapToUserResponse(User user) {
+        return UserResponse.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .email(user.getEmail())
+                .build();
+    }
 }

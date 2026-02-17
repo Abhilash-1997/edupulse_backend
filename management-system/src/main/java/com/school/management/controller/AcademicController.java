@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/academic")
+@RequestMapping("/academics")
 @RequiredArgsConstructor
 public class AcademicController {
 
@@ -82,11 +82,11 @@ public class AcademicController {
         return ResponseEntity.ok(ApiResponse.success(sections));
     }
 
-    @GetMapping("/sections/by-class/{classId}")
+    @GetMapping("/classes/standards/{standard}/divisions")
     @RequireAdminOrTeacher
     public ResponseEntity<ApiResponse<List<ClassSectionResponse>>> getSectionsByClass(
-            @PathVariable UUID classId) {
-        List<ClassSectionResponse> sections = academicService.getSectionsByClass(classId);
+            @PathVariable UUID standard) {
+        List<ClassSectionResponse> sections = academicService.getSectionsByClass(standard);
         return ResponseEntity.ok(ApiResponse.success(sections));
     }
 

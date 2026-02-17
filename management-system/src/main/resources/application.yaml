@@ -90,3 +90,6 @@ logging:
     com.school.management: DEBUG
     org.springframework.web: DEBUG
     org.hibernate.SQL: DEBUG
+
+app:
+  super-admin-password: ${SUPER_ADMIN_PASSWORD:ChangeMe@123}

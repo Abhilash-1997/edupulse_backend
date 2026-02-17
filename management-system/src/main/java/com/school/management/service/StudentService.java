@@ -3,6 +3,9 @@ package com.school.management.service;
 import com.school.management.dto.request.BulkUpdateStudentsRequest;
 import com.school.management.dto.request.CreateStudentRequest;
 import com.school.management.dto.request.UpdateStudentRequest;
+import com.school.management.dto.response.ClassResponse;
+import com.school.management.dto.response.ClassSectionResponse;
+import com.school.management.dto.response.ParentResponse;
 import com.school.management.dto.response.StudentResponse;
 import com.school.management.entity.*;
 import com.school.management.exception.BadRequestException;
@@ -65,16 +68,14 @@ public class StudentService {
 
         // Set class if provided
         if (request.getClassId() != null) {
-            ClassEntity classEntity = new ClassEntity();
-            classEntity.setId(request.getClassId());
+            ClassEntity classEntity = classRepository.findById(request.getClassId()).orElse(null);
             student.setClassEntity(classEntity);
         }
 
         // Set section if provided
         if (request.getSectionId() != null) {
-            ClassSection section = new ClassSection();
-            section.setId(request.getSectionId());
-            student.setSection(section);
+            ClassSection classSection = classSectionRepository.findById(request.getSectionId()).orElse(null);
+            student.setSection(classSection);
         }
 
         student = studentRepository.save(student);
@@ -231,6 +232,35 @@ public class StudentService {
     }
 
     private StudentResponse mapToStudentResponse(Student student) {
+
+        ParentResponse parentResponse = null;
+        if (student.getParent() != null) {
+            Parent parent = student.getParent();
+
+            parentResponse = ParentResponse.builder()
+                    .id(parent.getId())
+                    .guardianName(parent.getGuardianName())
+                    .occupation(parent.getOccupation())
+                    .build();
+        }
+        ClassResponse classResponse = null;
+        if (student.getClassEntity() != null) {
+            ClassEntity classEntity = student.getClassEntity();
+
+            classResponse = ClassResponse.builder()
+                    .id(classEntity.getId())
+                    .name(classEntity.getName())
+                    .build();
+        }
+        ClassSectionResponse classSectionResponse = null;
+        if (student.getSection() != null) {
+            ClassSection classSection = student.getSection();
+
+            classSectionResponse = ClassSectionResponse.builder()
+                    .name(classSection.getName())
+                    .build();
+
+        }
         return StudentResponse.builder()
                 .id(student.getId())
                 .name(student.getName())
@@ -241,6 +271,9 @@ public class StudentService {
                 .parentId(student.getParent() != null ? student.getParent().getId() : null)
                 .classId(student.getClassEntity() != null ? student.getClassEntity().getId() : null)
                 .sectionId(student.getSection() != null ? student.getSection().getId() : null)
+                .parent(parentResponse)
+                .classInfo(classResponse)
+                .sectionInfo(classSectionResponse)
                 .build();
     }
 }

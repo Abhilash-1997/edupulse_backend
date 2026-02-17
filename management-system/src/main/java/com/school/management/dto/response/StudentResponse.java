@@ -27,4 +27,5 @@ public class StudentResponse {
     private ClassResponse classInfo;
     private ClassSectionResponse sectionInfo;
     private ParentResponse parent;
+    private String className;
 }

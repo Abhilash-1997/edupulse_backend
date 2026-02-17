@@ -69,4 +69,25 @@ public interface StudentRepository extends BaseRepository<Student> {
   Optional<Student> findByIdAndSchoolIdWithDetails(
       @Param("id") UUID id,
       @Param("schoolId") UUID schoolId);
+
+    @Query("""
+    SELECT s FROM Student s
+    LEFT JOIN FETCH s.parent
+    LEFT JOIN FETCH s.classEntity
+    WHERE s.school.id = :schoolId
+    AND s.deletedAt IS NULL
+""")
+    List<Student> findAllWithParentAndClass(UUID schoolId);
+
+    @Query("""
+    SELECT s FROM Student s
+    LEFT JOIN FETCH s.parent
+    LEFT JOIN FETCH s.classEntity
+    WHERE s.school.id = :schoolId
+    AND s.parent.id = :parentId
+    AND s.deletedAt IS NULL
+""")
+    List<Student> findAllByParentWithFetch(UUID schoolId, UUID parentId);
+
+
 }

@@ -10,7 +10,7 @@ import java.util.UUID;
 @Repository
 public interface ParentRepository extends BaseRepository<Parent> {
     Optional<Parent> findByUser_IdAndDeletedAtIsNull(UUID userId);
-
+    
     Optional<Parent> findByIdAndDeletedAtIsNull(UUID id);
 
     List<Parent> findBySchool_IdAndDeletedAtIsNull(UUID schoolId);

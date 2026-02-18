@@ -298,16 +298,21 @@ public class PayrollService {
     public List<PayrollResponse> getPayrolls(String month, Integer year) {
         UUID schoolId = SecurityUtils.getCurrentUserSchoolId();
 
-        List<Payroll> payrolls;
+        String normalizedMonth = normalizeMonth(month);
 
-        if (month != null && year != null) {
+        List<Payroll> payrolls;
+        if (normalizedMonth != null && year != null) {
             payrolls = payrollRepository.findBySchool_IdAndMonthAndYearAndDeletedAtIsNull(
-                    schoolId, month.toUpperCase(), year);
-        } else if (month != null) {
+                            schoolId, normalizedMonth, year);
+
+        } else if (normalizedMonth != null) {
             payrolls = payrollRepository.findBySchool_IdAndMonthAndDeletedAtIsNull(
-                    schoolId, month.toUpperCase());
+                            schoolId, normalizedMonth);
+
         } else if (year != null) {
-            payrolls = payrollRepository.findBySchool_IdAndYearAndDeletedAtIsNull(schoolId, year);
+            payrolls = payrollRepository.findBySchool_IdAndYearAndDeletedAtIsNull(
+                            schoolId, year);
+
         } else {
             payrolls = payrollRepository.findBySchool_IdAndDeletedAtIsNull(schoolId);
         }
@@ -315,6 +320,7 @@ public class PayrollService {
         return payrolls.stream()
                 .map(this::mapToPayrollResponse)
                 .collect(Collectors.toList());
+
     }
 
     /**
@@ -578,4 +584,21 @@ public class PayrollService {
                 .status(staff.getStatus())
                 .build();
     }
+
+    private String normalizeMonth(String monthInput) {
+        if (monthInput == null || monthInput.isBlank()) {
+            return null;
+        }
+        monthInput = monthInput.trim();
+        // If numeric (1-12)
+        if (monthInput.matches("\\d+")) {
+            int monthNumber = Integer.parseInt(monthInput);
+            if (monthNumber < 1 || monthNumber > 12) {
+                throw new IllegalArgumentException("Invalid month number: " + monthInput);
+            }
+            return java.time.Month.of(monthNumber).name();
+        }
+        return monthInput.toUpperCase();
+    }
+
 }

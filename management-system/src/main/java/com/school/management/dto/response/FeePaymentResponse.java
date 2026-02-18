@@ -23,6 +23,11 @@ public class FeePaymentResponse {
     private PaymentMethod paymentMethod;
     private PaymentStatus status;
     private UUID studentId;
+    private String studentName;
+    private String admissionNumber;
+    private UUID classId;
+    private String className;
+    private String sectionName;
     private UUID feeStructureId;
     private String feeName;
 }

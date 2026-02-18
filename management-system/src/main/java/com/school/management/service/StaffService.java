@@ -117,6 +117,8 @@ public class StaffService {
     public List<StaffProfileResponse> getAllStaff(List<UserRole> roles, Boolean isActive) {
         UUID schoolId = SecurityUtils.getCurrentUserSchoolId();
 
+        log.info("Getting all staff profiles for school {}", schoolId);
+        log.info("Getting all staff profiles for Role {}", roles);
         // Default roles if not provided
         if (roles == null || roles.isEmpty()) {
             roles = List.of(UserRole.TEACHER, UserRole.STAFF, UserRole.LIBRARIAN, UserRole.BUS_DRIVER);

@@ -7,6 +7,7 @@ import com.school.management.dto.response.StudentResponse;
 import com.school.management.service.StudentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,6 +18,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/students")
 @RequiredArgsConstructor
+@Slf4j
 public class StudentController {
 
     private final StudentService studentService;
@@ -50,6 +52,7 @@ public class StudentController {
 
     @GetMapping
     public ResponseEntity<List<StudentResponse>> getAllStudents(@RequestParam(required = false) UUID parentId, @RequestParam(required = false) UUID classId) {
+//        log.info("classId-----------> {}", classId.toString());
         List<StudentResponse> response = studentService.getAllStudents(parentId, classId);
         return ResponseEntity.ok().body(response);
     }

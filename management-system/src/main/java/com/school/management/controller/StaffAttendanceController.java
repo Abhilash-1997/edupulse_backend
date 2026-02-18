@@ -2,6 +2,7 @@ package com.school.management.controller;
 
 import com.school.management.dto.request.MarkStaffAttendanceRequest;
 import com.school.management.dto.response.ApiResponse;
+import com.school.management.dto.response.StaffAttendanceByDateResponse;
 import com.school.management.dto.response.StaffAttendanceResponse;
 import com.school.management.security.annotation.RequireAdmin;
 import com.school.management.service.StaffAttendanceService;
@@ -26,26 +27,27 @@ public class StaffAttendanceController {
 
     @PostMapping("/mark")
     public ResponseEntity<ApiResponse<List<StaffAttendanceResponse>>> markAttendance(
-            @Valid @RequestBody MarkStaffAttendanceRequest request){
+            @Valid @RequestBody MarkStaffAttendanceRequest request) {
 
         List<StaffAttendanceResponse> response = staffAttendanceService.markAttendance(request);
         return ResponseEntity.ok(ApiResponse.success("Attendance marked successfully", response));
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<StaffAttendanceResponse>>> getAttendance(
-            @RequestParam(required = true) LocalDate date){
-        List<StaffAttendanceResponse> response = staffAttendanceService.getAttendanceByDate(date);
-        return ResponseEntity.ok(ApiResponse.success("Attendance Fetched successfully on " + date , response));
+    public ResponseEntity<ApiResponse<StaffAttendanceByDateResponse>> getAttendance(
+            @RequestParam(required = true) LocalDate date) {
+        StaffAttendanceByDateResponse response = staffAttendanceService.getAttendanceByDate(date);
+        return ResponseEntity.ok(ApiResponse.success("Attendance fetched successfully on " + date, response));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<List<StaffAttendanceResponse>>> getAttendance(
             @PathVariable UUID id,
             @RequestParam LocalDate startDate,
-            @RequestParam LocalDate endDate){
-            List<StaffAttendanceResponse> response = staffAttendanceService.getStaffAttendance(id, startDate, endDate);
-            return ResponseEntity.ok(ApiResponse.success("StaffAttendance Fetched successfully on " + startDate + " and " + endDate , response));
+            @RequestParam LocalDate endDate) {
+        List<StaffAttendanceResponse> response = staffAttendanceService.getStaffAttendance(id, startDate, endDate);
+        return ResponseEntity.ok(ApiResponse
+                .success("StaffAttendance Fetched successfully on " + startDate + " and " + endDate, response));
     }
 
     @PutMapping("/{id}")
@@ -58,12 +60,9 @@ public class StaffAttendanceController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteAttendance(@PathVariable UUID id){
+    public ResponseEntity<Void> deleteAttendance(@PathVariable UUID id) {
         staffAttendanceService.deleteAttendance(id);
         return ResponseEntity.ok().build();
     }
-
-
-
 
 }

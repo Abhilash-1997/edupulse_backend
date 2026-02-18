@@ -293,10 +293,30 @@ public class FinanceService {
                                                         .studentId(student.getId())
                                                         .studentName(student.getName())
                                                         .admissionNumber(student.getAdmissionNumber())
+                                                        .classId(student.getClassEntity() != null
+                                                                        ? student.getClassEntity().getId()
+                                                                        : null)
+                                                        .className(student.getClassEntity() != null
+                                                                        ? student.getClassEntity().getName()
+                                                                        : null)
+                                                        .sectionName(student.getSection() != null
+                                                                        ? student.getSection().getName()
+                                                                        : null)
                                                         .totalDue(totalDue)
+                                                        .totalFeesPerStudent(totalDue)
                                                         .totalPaid(totalPaid)
                                                         .balance(totalDue - totalPaid)
                                                         .status(status)
+                                                        .fees(feeStructures.stream()
+                                                                        .map(fs -> StudentFeeStatusResponse.FeeItem
+                                                                                        .builder()
+                                                                                        .feeStructureId(fs.getId())
+                                                                                        .name(fs.getName())
+                                                                                        .amount(fs.getAmount())
+                                                                                        .frequency(fs.getFrequency())
+                                                                                        .dueDate(fs.getDueDate())
+                                                                                        .build())
+                                                                        .collect(Collectors.toList()))
                                                         .build();
                                 })
                                 .collect(Collectors.toList());
@@ -451,6 +471,7 @@ public class FinanceService {
         }
 
         private FeePaymentResponse mapToFeePaymentResponse(FeePayment payment) {
+                Student student = payment.getStudent();
                 return FeePaymentResponse.builder()
                                 .id(payment.getId())
                                 .amountPaid(payment.getAmountPaid())
@@ -458,7 +479,12 @@ public class FinanceService {
                                 .transactionId(payment.getTransactionId())
                                 .paymentMethod(payment.getPaymentMethod())
                                 .status(payment.getStatus())
-                                .studentId(payment.getStudent().getId())
+                                .studentId(student.getId())
+                                .studentName(student.getName())
+                                .admissionNumber(student.getAdmissionNumber())
+                                .classId(student.getClassEntity() != null ? student.getClassEntity().getId() : null)
+                                .className(student.getClassEntity() != null ? student.getClassEntity().getName() : null)
+                                .sectionName(student.getSection() != null ? student.getSection().getName() : null)
                                 .feeStructureId(payment.getFeeStructure().getId())
                                 .feeName(payment.getFeeStructure().getName())
                                 .build();

@@ -17,4 +17,5 @@ public class BulkUpdateStudentsRequest {
     private List<UUID> studentIds;
     private UUID sectionId;
     private UUID parentId;
+    private UUID classId;
 }

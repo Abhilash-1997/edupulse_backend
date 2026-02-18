@@ -5,6 +5,7 @@ import com.school.management.dto.request.CreateParentRequest;
 import com.school.management.dto.response.MyChildrenResponse;
 import com.school.management.dto.response.ParentResponse;
 import com.school.management.dto.response.StudentResponse;
+import com.school.management.dto.response.UserResponse;
 import com.school.management.entity.*;
 import com.school.management.exception.BadRequestException;
 import com.school.management.exception.ResourceNotFoundException;
@@ -35,7 +36,8 @@ public class ParentService {
     private final PasswordUtil passwordUtil;
     private final EmailService emailService;
 
-    //================================== CREATE PARENT ===============================================
+    // ================================== CREATE PARENT
+    // ===============================================
 
     @Transactional
     public ParentResponse createParent(CreateParentRequest request) {
@@ -56,7 +58,7 @@ public class ParentService {
                 User classTeacher = section.getClassTeacher();
                 if (classTeacher == null || !classTeacher.getId().equals(currentUserId)) {
                     throw new UnauthorizedException("You can only create parents for students in your own sections. "
-                            +"Student: " + student.getName() + " is in section: " + section.getName());
+                            + "Student: " + student.getName() + " is in section: " + section.getName());
                 }
             }
         }
@@ -108,16 +110,16 @@ public class ParentService {
                     user.getName(),
                     user.getEmail(),
                     request.getPassword(),
-                    studentNames
-            );
+                    studentNames);
         } catch (Exception e) {
             log.error("Failed to send parent account email", e);
         }
 
-        return mapToParentResponse(parent);
+        return mapToParentResponse(parent, students);
     }
 
-    //================================== GET ALL PARENTS ===============================================
+    // ================================== GET ALL PARENTS
+    // ===============================================
 
     @Transactional(readOnly = true)
     public List<ParentResponse> getAllParents() {
@@ -126,11 +128,15 @@ public class ParentService {
         List<Parent> parents = parentRepository.findBySchool_IdAndDeletedAtIsNull(schoolId);
 
         return parents.stream()
-                .map(this::mapToParentResponse)
+                .map(parent -> {
+                    List<Student> students = studentRepository.findByParent_IdAndDeletedAtIsNull(parent.getId());
+                    return mapToParentResponse(parent, students);
+                })
                 .collect(Collectors.toList());
     }
 
-    //================================== GET MY CHILDREN BASED ON PARENT ID ===============================================
+    // ================================== GET MY CHILDREN BASED ON PARENT ID
+    // ===============================================
 
     @RequireParent
     @Transactional(readOnly = true)
@@ -170,11 +176,28 @@ public class ParentService {
                 .build();
     }
 
-    private ParentResponse mapToParentResponse(Parent parent) {
+    private ParentResponse mapToParentResponse(Parent parent, List<Student> students) {
+        User user = parent.getUser();
+        UserResponse userResponse = UserResponse.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .email(user.getEmail())
+                .phone(user.getPhone())
+                .role(user.getRole())
+                .isActive(user.getIsActive())
+                .schoolId(user.getSchool() != null ? user.getSchool().getId() : null)
+                .build();
+
+        List<StudentResponse> studentResponses = students.stream()
+                .map(this::mapToStudentResponse)
+                .collect(Collectors.toList());
+
         return ParentResponse.builder()
                 .id(parent.getId())
                 .guardianName(parent.getGuardianName())
                 .occupation(parent.getOccupation())
+                .user(userResponse)
+                .students(studentResponses)
                 .build();
     }
 
@@ -185,6 +208,11 @@ public class ParentService {
                 .admissionNumber(student.getAdmissionNumber())
                 .dob(student.getDob())
                 .gender(student.getGender())
+                .profilePicture(student.getProfilePicture())
+                .parentId(student.getParent() != null ? student.getParent().getId() : null)
+                .classId(student.getClassEntity() != null ? student.getClassEntity().getId() : null)
+                .sectionId(student.getSection() != null ? student.getSection().getId() : null)
+                .className(student.getClassEntity() != null ? student.getClassEntity().getName() : null)
                 .build();
     }
 }

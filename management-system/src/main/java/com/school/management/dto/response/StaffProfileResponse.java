@@ -17,9 +17,11 @@ import java.util.UUID;
 public class StaffProfileResponse {
 
     private UUID id;
+    private String name;
     private String employeeCode;
     private String department;
     private String designation;
+    private String profilePicture;
     private LocalDate joiningDate;
     private StaffWorkingAs workingAs;
     private StaffStatus status;

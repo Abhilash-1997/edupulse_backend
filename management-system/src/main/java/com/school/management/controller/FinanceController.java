@@ -139,9 +139,7 @@ public class FinanceController {
             @RequestParam(required = false) Integer size) {
 
         log.info("Fetching receipts, studentId: {}", studentId);
-
         Page<FeePaymentResponse> response = financeService.getReceipts(studentId, page, size);
-
         return ResponseEntity.ok(ApiResponse.success("Receipts retrieved successfully", response));
     }
 

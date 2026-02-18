@@ -4,10 +4,12 @@ public enum ComplaintStatus {
     Open("Open"),
     In_Progress("In Progress"),
     Resolved("Resolved"),
-    Closed("Closed");
+    Closed("Closed"),
+    Pending("Pending"),
+    Rejected("Rejected");
+
 
     private final String displayName;
-
     ComplaintStatus(String displayName) {
         this.displayName = displayName;
     }

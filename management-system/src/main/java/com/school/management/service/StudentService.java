@@ -133,14 +133,17 @@ public class StudentService {
             }
 
             if (request.getSectionId() != null) {
-                ClassSection section = new ClassSection();
-                section.setId(request.getSectionId());
+                ClassSection section = classSectionRepository.findById(request.getSectionId()).orElse(null);
                 student.setSection(section);
             }
 
+            if(request.getClassId() != null) {
+                ClassEntity classEntity = classRepository.findById(request.getClassId()).orElse(null);
+                student.setClassEntity(classEntity);
+            }
+
             if (request.getParentId() != null) {
-                Parent parent = new Parent();
-                parent.setId(request.getParentId());
+                Parent parent = parentRepository.findById(request.getParentId()).orElse(null);
                 student.setParent(parent);
             }
         }
@@ -162,6 +165,7 @@ public class StudentService {
             }
         } else if (classId != null) {
             students = studentRepository.findBySchool_IdAndClassEntity_IdAndDeletedAtIsNull(schoolId, classId);
+            log.info("[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[ {}",students.stream().toList());
         } else {
             students = studentRepository.findBySchool_IdAndDeletedAtIsNull(schoolId);
         }

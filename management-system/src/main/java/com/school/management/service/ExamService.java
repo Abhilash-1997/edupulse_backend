@@ -6,6 +6,7 @@ import com.school.management.dto.request.CreateExamRequest;
 import com.school.management.dto.request.UpdateExamResultRequest;
 import com.school.management.dto.response.ExamResponse;
 import com.school.management.dto.response.ExamResultResponse;
+import com.school.management.dto.response.ExamResultsByStudentResponse;
 import com.school.management.dto.response.ReportCardResponse;
 import com.school.management.dto.response.StudentExamResultsResponse;
 import com.school.management.entity.*;
@@ -186,19 +187,74 @@ public class ExamService {
     // ========================================
 
     @Transactional(readOnly = true)
-    public List<ExamResultResponse> getExamResults(UUID examId, UUID subjectId,
+    public List<ExamResultsByStudentResponse> getExamResults(UUID examId, UUID subjectId,
             UUID classId, UUID sectionId) {
         UUID schoolId = SecurityUtils.getCurrentUserSchoolId();
 
         List<ExamResult> results = examResultRepository.findByFilters(
                 schoolId, examId, subjectId, classId, sectionId);
 
-        return results.stream()
-                .map(result -> {
-                    Float percentage = (result.getMarksObtained() / result.getMaxMarks()) * 100;
-                    return mapToExamResultResponse(result, percentage);
-                })
-                .collect(Collectors.toList());
+        // Group results by student
+        Map<UUID, List<ExamResult>> resultsByStudent = results.stream()
+                .collect(Collectors.groupingBy(
+                        r -> r.getStudent().getId(),
+                        LinkedHashMap::new,
+                        Collectors.toList()));
+
+        List<ExamResultsByStudentResponse> responses = new ArrayList<>();
+
+        for (Map.Entry<UUID, List<ExamResult>> entry : resultsByStudent.entrySet()) {
+            List<ExamResult> studentResults = entry.getValue();
+            Student student = studentResults.get(0).getStudent();
+
+            float totalObtained = 0;
+            float totalMax = 0;
+            boolean isFailed = false;
+
+            List<ExamResultsByStudentResponse.SubjectResult> subjectResults = new ArrayList<>();
+
+            for (ExamResult r : studentResults) {
+                float pct = r.getMaxMarks() > 0 ? (r.getMarksObtained() / r.getMaxMarks()) * 100 : 0;
+                String grade = r.getGrade();
+                if (grade == null) {
+                    grade = calculateGrade(schoolId, pct);
+                }
+                if ("F".equalsIgnoreCase(grade)) {
+                    isFailed = true;
+                }
+
+                subjectResults.add(ExamResultsByStudentResponse.SubjectResult.builder()
+                        .subject(ExamResultsByStudentResponse.SubjectInfo.builder()
+                                .id(r.getSubject().getId())
+                                .name(r.getSubject().getName())
+                                .code(r.getSubject().getCode())
+                                .build())
+                        .marksObtained(r.getMarksObtained())
+                        .maxMarks(r.getMaxMarks())
+                        .grade(grade)
+                        .build());
+
+                totalObtained += r.getMarksObtained();
+                totalMax += r.getMaxMarks();
+            }
+
+            float percentage = totalMax > 0 ? Math.round((totalObtained / totalMax) * 1000) / 10.0f : 0;
+
+            responses.add(ExamResultsByStudentResponse.builder()
+                    .student(ExamResultsByStudentResponse.StudentInfo.builder()
+                            .id(student.getId())
+                            .name(student.getName())
+                            .admissionNumber(student.getAdmissionNumber())
+                            .build())
+                    .totalObtained(totalObtained)
+                    .totalMax(totalMax)
+                    .percentage(percentage)
+                    .isFailed(isFailed)
+                    .results(subjectResults)
+                    .build());
+        }
+
+        return responses;
     }
 
     // =========================== get student report card

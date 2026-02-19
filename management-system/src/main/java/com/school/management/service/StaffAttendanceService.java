@@ -1,6 +1,5 @@
 package com.school.management.service;
 
-import com.school.management.constant.AttendanceStatus;
 import com.school.management.dto.request.MarkStaffAttendanceRequest;
 import com.school.management.dto.response.StaffAttendanceByDateResponse;
 import com.school.management.dto.response.StaffAttendanceResponse;
@@ -8,7 +7,6 @@ import com.school.management.dto.response.StaffProfileResponse;
 import com.school.management.entity.School;
 import com.school.management.entity.StaffAttendance;
 import com.school.management.entity.StaffProfile;
-import com.school.management.exception.BadRequestException;
 import com.school.management.exception.ResourceNotFoundException;
 import com.school.management.repository.SchoolRepository;
 import com.school.management.repository.StaffAttendanceRepository;

@@ -8,6 +8,7 @@ import com.school.management.dto.request.UpsertSalaryStructureRequest;
 import com.school.management.dto.response.PayrollResponse;
 import com.school.management.dto.response.SalaryStructureResponse;
 import com.school.management.dto.response.StaffProfileResponse;
+import com.school.management.dto.response.UserResponse;
 import com.school.management.entity.*;
 import com.school.management.exception.BadRequestException;
 import com.school.management.exception.ResourceNotFoundException;
@@ -121,8 +122,7 @@ public class PayrollService {
                             monthName,
                             year,
                             pdfBytes,
-                            school.getName()
-                    );
+                            school.getName());
                 } catch (Exception e) {
                     log.error("Failed to send payslip for staff: {} ({})",
                             staff.getUser().getName(), staff.getEmployeeCode(), e);
@@ -203,7 +203,8 @@ public class PayrollService {
                 .filter(a -> a.getStatus() == AttendanceStatus.ABSENT)
                 .count();
 
-        // Leave count = days with no attendance record (excluding absents and recorded days)
+        // Leave count = days with no attendance record (excluding absents and recorded
+        // days)
         long recordedDays = presentCount + halfDayCount + absentCount;
         long leaveCount = effectiveEmployedDays - recordedDays;
 
@@ -216,7 +217,7 @@ public class PayrollService {
         Float totalLOPDays = (float) absentCount + deductibleLeaves + (deductibleHalfDays * 0.5f);
 
         log.info("LOP calculation for staff {}: Present={}, HalfDay={}, Absent={}, Leave={}, " +
-                        "Deductible Leaves={}, Deductible HalfDays={}, Total LOP Days={}",
+                "Deductible Leaves={}, Deductible HalfDays={}, Total LOP Days={}",
                 staff.getEmployeeCode(), presentCount, halfDayCount, absentCount, leaveCount,
                 deductibleLeaves, deductibleHalfDays, totalLOPDays);
 
@@ -303,15 +304,15 @@ public class PayrollService {
         List<Payroll> payrolls;
         if (normalizedMonth != null && year != null) {
             payrolls = payrollRepository.findBySchool_IdAndMonthAndYearAndDeletedAtIsNull(
-                            schoolId, normalizedMonth, year);
+                    schoolId, normalizedMonth, year);
 
         } else if (normalizedMonth != null) {
             payrolls = payrollRepository.findBySchool_IdAndMonthAndDeletedAtIsNull(
-                            schoolId, normalizedMonth);
+                    schoolId, normalizedMonth);
 
         } else if (year != null) {
             payrolls = payrollRepository.findBySchool_IdAndYearAndDeletedAtIsNull(
-                            schoolId, year);
+                    schoolId, year);
 
         } else {
             payrolls = payrollRepository.findBySchool_IdAndDeletedAtIsNull(schoolId);
@@ -433,10 +434,9 @@ public class PayrollService {
 
         // Recalculate net salary
         Float basicSalary = payroll.getBasicSalary();
-        Float allowancesTotal = payroll.getAllowances() != null ?
-                payroll.getAllowances().stream()
-                        .map(a -> ((Number) a.get("amount")).floatValue())
-                        .reduce(0.0f, Float::sum) : 0.0f;
+        Float allowancesTotal = payroll.getAllowances() != null ? payroll.getAllowances().stream()
+                .map(a -> ((Number) a.get("amount")).floatValue())
+                .reduce(0.0f, Float::sum) : 0.0f;
         Float bonus = payroll.getBonus() != null ? payroll.getBonus() : 0.0f;
         Float deductions = payroll.getDeductions() != null ? payroll.getDeductions() : 0.0f;
 
@@ -463,7 +463,7 @@ public class PayrollService {
                 .orElseThrow(() -> new ResourceNotFoundException("School not found"));
 
         StaffProfile staff = staffProfileRepository.findByIdAndSchool_IdAndDeletedAtIsNull(
-                        request.getStaffId(), schoolId)
+                request.getStaffId(), schoolId)
                 .orElseThrow(() -> new ResourceNotFoundException("Staff not found"));
 
         // Calculate net salary
@@ -574,14 +574,32 @@ public class PayrollService {
     }
 
     private StaffProfileResponse mapToStaffProfileResponse(StaffProfile staff) {
+        UserResponse userResponse = null;
+        String name = null;
+        if (staff.getUser() != null) {
+            User user = staff.getUser();
+            name = user.getName();
+            userResponse = UserResponse.builder()
+                    .id(user.getId())
+                    .name(user.getName())
+                    .email(user.getEmail())
+                    .phone(user.getPhone())
+                    .role(user.getRole())
+                    .isActive(user.getIsActive())
+                    .schoolId(user.getSchool() != null ? user.getSchool().getId() : null)
+                    .build();
+        }
+
         return StaffProfileResponse.builder()
                 .id(staff.getId())
+                .name(name)
                 .employeeCode(staff.getEmployeeCode())
                 .department(staff.getDepartment())
                 .designation(staff.getDesignation())
                 .joiningDate(staff.getJoiningDate())
                 .workingAs(staff.getWorkingAs())
                 .status(staff.getStatus())
+                .user(userResponse)
                 .build();
     }
 

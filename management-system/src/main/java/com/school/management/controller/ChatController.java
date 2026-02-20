@@ -17,7 +17,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/chat")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('TEACHER','STUDENT','SCHOOL_ADMIN')")
+@PreAuthorize("hasAnyRole('TEACHER','STUDENT','SCHOOL_ADMIN', 'PARENT')")
 public class ChatController {
 
     private final ChatService chatService;

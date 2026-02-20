@@ -38,7 +38,6 @@ public class LeaveController {
         );
     }
 
-    @RequireAdmin
     @GetMapping("/my-leaves")
     public ResponseEntity<ApiResponse<List<LeaveResponse>>> getMyLeaves(
             @RequestParam(required = false) LeaveStatus status) {

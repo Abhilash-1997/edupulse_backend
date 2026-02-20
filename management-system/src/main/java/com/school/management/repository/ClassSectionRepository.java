@@ -14,9 +14,12 @@ public interface ClassSectionRepository extends BaseRepository<ClassSection> {
 
         Optional<ClassSection> findByIdAndDeletedAtIsNull(UUID id);
 
-        Optional<ClassSection> findByClassTeacher_IdAndDeletedAtIsNull(UUID classTeacherId);
+//        Optional<ClassSection> findByClassTeacher_IdAndDeletedAtIsNull(UUID classTeacherId);
 
-        List<ClassSection> findByClassEntity_IdAndDeletedAtIsNull(UUID classId);
+        List<ClassSection> findByClassTeacher_IdAndDeletedAtIsNull(UUID teacherId);
+
+
+    List<ClassSection> findByClassEntity_IdAndDeletedAtIsNull(UUID classId);
 
         @Query("SELECT cs FROM ClassSection cs JOIN cs.classEntity c " +
                         "WHERE c.school.id = :schoolId AND cs.deletedAt IS NULL")

@@ -8,6 +8,8 @@ import com.school.management.service.StudentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,24 +25,26 @@ public class StudentController {
 
     private final StudentService studentService;
 
-    //===================   CREATE STUDENT ============================
+    // =================== CREATE STUDENT ============================
 
     @PostMapping
-    public ResponseEntity<StudentResponse> createStudent(@Valid @RequestBody CreateStudentRequest createStudentRequest) {
+    public ResponseEntity<StudentResponse> createStudent(
+            @Valid @RequestBody CreateStudentRequest createStudentRequest) {
         StudentResponse studentResponse = studentService.createStudent(createStudentRequest);
         return ResponseEntity.ok(studentResponse);
     }
 
-    //===================   UPDATE STUDENT ============================
+    // =================== UPDATE STUDENT ============================
 
     @PutMapping("/{id}")
-    public ResponseEntity<StudentResponse> updateStudent(@PathVariable UUID id, @Valid @RequestBody UpdateStudentRequest request) {
+    public ResponseEntity<StudentResponse> updateStudent(@PathVariable UUID id,
+            @Valid @RequestBody UpdateStudentRequest request) {
 
         StudentResponse response = studentService.updateStudent(id, request);
         return ResponseEntity.ok(response);
     }
 
-    //===================   BULK UPDATE STUDENT ============================
+    // =================== BULK UPDATE STUDENT ============================
 
     @PutMapping("/bulk-update")
     public ResponseEntity<Void> bulkUpdateStudents(@Valid @RequestBody BulkUpdateStudentsRequest request) {
@@ -48,16 +52,16 @@ public class StudentController {
         return ResponseEntity.ok().build();
     }
 
-    //===================   GET ALL STUDENT ============================
+    // =================== GET ALL STUDENT ============================
 
     @GetMapping
-    public ResponseEntity<List<StudentResponse>> getAllStudents(@RequestParam(required = false) UUID parentId, @RequestParam(required = false) UUID classId) {
-//        log.info("classId-----------> {}", classId.toString());
+    public ResponseEntity<List<StudentResponse>> getAllStudents(@RequestParam(required = false) UUID parentId,
+            @RequestParam(required = false) UUID classId) {
         List<StudentResponse> response = studentService.getAllStudents(parentId, classId);
         return ResponseEntity.ok().body(response);
     }
 
-    //===================   GET ALL STUDENT ============================
+    // =================== GET STUDENT BY ID ============================
 
     @GetMapping("/{id}")
     public ResponseEntity<StudentResponse> getStudentsById(@PathVariable UUID id) {
@@ -65,24 +69,38 @@ public class StudentController {
         return ResponseEntity.ok().body(response);
     }
 
+    // =================== GENERATE ID CARD ============================
 
+    @GetMapping("/{id}/id-card")
+    public ResponseEntity<byte[]> generateIDCard(@PathVariable UUID id) {
+        log.info("Request: GET /students/{}/id-card", id);
+        byte[] pdfBytes = studentService.generateIDCard(id);
 
-    //===================   UPLOAD PROFILE PIC ============================
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("attachment", "id-card.pdf");
+        headers.setContentLength(pdfBytes.length);
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(pdfBytes);
+    }
+
+    // =================== UPLOAD PROFILE PIC ============================
 
     @PostMapping("/{id}/profile-picture")
-    public ResponseEntity<String> uploadProfilePicture(@PathVariable UUID id, @RequestParam("file") MultipartFile file) {
+    public ResponseEntity<String> uploadProfilePicture(@PathVariable UUID id,
+            @RequestParam("file") MultipartFile file) {
         String path = studentService.uploadProfilePicture(id, file);
         return ResponseEntity.ok(path);
     }
 
-    //=================== DELETE STUDENT ============================
+    // =================== DELETE STUDENT ============================
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteStudent(@PathVariable UUID id) {
         studentService.deleteStudent(id);
         return ResponseEntity.noContent().build();
     }
-
-
 
 }

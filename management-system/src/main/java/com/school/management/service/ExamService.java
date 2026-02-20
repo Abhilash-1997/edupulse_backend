@@ -4,6 +4,8 @@ import com.school.management.constant.ExamType;
 import com.school.management.dto.request.AddExamResultRequest;
 import com.school.management.dto.request.CreateExamRequest;
 import com.school.management.dto.request.UpdateExamResultRequest;
+import com.school.management.dto.response.ClassResponse;
+import com.school.management.dto.response.ClassSectionResponse;
 import com.school.management.dto.response.ExamResponse;
 import com.school.management.dto.response.ExamResultResponse;
 import com.school.management.dto.response.ExamResultsByStudentResponse;
@@ -538,6 +540,24 @@ public class ExamService {
     }
 
     private ExamResponse mapToExamResponse(Exam exam) {
+        ClassResponse classInfo = null;
+        if (exam.getClassEntity() != null) {
+            classInfo = ClassResponse.builder()
+                    .id(exam.getClassEntity().getId())
+                    .name(exam.getClassEntity().getName())
+                    .build();
+        }
+
+        ClassSectionResponse sectionInfo = null;
+        if (exam.getSection() != null) {
+            sectionInfo = ClassSectionResponse.builder()
+                    .id(exam.getSection().getId())
+                    .name(exam.getSection().getName())
+                    .classId(exam.getClassEntity() != null ? exam.getClassEntity().getId() : null)
+                    .className(exam.getClassEntity() != null ? exam.getClassEntity().getName() : null)
+                    .build();
+        }
+
         return ExamResponse.builder()
                 .id(exam.getId())
                 .name(exam.getName())
@@ -545,6 +565,8 @@ public class ExamService {
                 .startDate(exam.getStartDate())
                 .endDate(exam.getEndDate())
                 .isActive(exam.getIsActive())
+                .classInfo(classInfo)
+                .section(sectionInfo)
                 .build();
     }
 

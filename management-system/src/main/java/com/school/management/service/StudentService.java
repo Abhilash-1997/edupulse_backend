@@ -3,10 +3,7 @@ package com.school.management.service;
 import com.school.management.dto.request.BulkUpdateStudentsRequest;
 import com.school.management.dto.request.CreateStudentRequest;
 import com.school.management.dto.request.UpdateStudentRequest;
-import com.school.management.dto.response.ClassResponse;
-import com.school.management.dto.response.ClassSectionResponse;
-import com.school.management.dto.response.ParentResponse;
-import com.school.management.dto.response.StudentResponse;
+import com.school.management.dto.response.*;
 import com.school.management.entity.*;
 import com.school.management.exception.BadRequestException;
 import com.school.management.exception.ResourceNotFoundException;
@@ -23,7 +20,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -36,6 +35,7 @@ public class StudentService {
     private final ParentRepository parentRepository;
     private final ClassRepository classRepository;
     private final ClassSectionRepository classSectionRepository;
+    private final PdfGenerationService pdfGenerationService;
     private final String uploadDir = "uploads/students";
 
     @Transactional
@@ -137,7 +137,7 @@ public class StudentService {
                 student.setSection(section);
             }
 
-            if(request.getClassId() != null) {
+            if (request.getClassId() != null) {
                 ClassEntity classEntity = classRepository.findById(request.getClassId()).orElse(null);
                 student.setClassEntity(classEntity);
             }
@@ -165,7 +165,7 @@ public class StudentService {
             }
         } else if (classId != null) {
             students = studentRepository.findBySchool_IdAndClassEntity_IdAndDeletedAtIsNull(schoolId, classId);
-            log.info("[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[ {}",students.stream().toList());
+            log.info("[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[ {}", students.stream().toList());
         } else {
             students = studentRepository.findBySchool_IdAndDeletedAtIsNull(schoolId);
         }
@@ -224,6 +224,46 @@ public class StudentService {
             throw new BadRequestException("Failed to upload file: " + e.getMessage());
         }
     }
+
+    // ======================== GENERATE ID CARD ========================
+
+    @Transactional(readOnly = true)
+    public byte[] generateIDCard(UUID studentId) {
+        UUID schoolId = SecurityUtils.getCurrentUserSchoolId();
+        log.info("Generating ID card for student {} in school {}", studentId, schoolId);
+
+        Student student = studentRepository.findByIdAndSchoolIdWithDetails(studentId, schoolId)
+                .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
+
+        String classInfo = "N/A";
+        if (student.getClassEntity() != null && student.getSection() != null) {
+            classInfo = student.getClassEntity().getName() + " - " + student.getSection().getName();
+        } else if (student.getClassEntity() != null) {
+            classInfo = student.getClassEntity().getName();
+        }
+
+        String fatherName = "N/A";
+        if (student.getParent() != null && student.getParent().getUser() != null) {
+            fatherName = student.getParent().getUser().getName();
+        }
+
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("schoolName", student.getSchool().getName());
+        variables.put("schoolAddress", student.getSchool().getAddress());
+        variables.put("schoolLogo", student.getSchool().getLogo());
+        variables.put("studentName", student.getName());
+        variables.put("admissionNumber", student.getAdmissionNumber());
+        variables.put("classInfo", classInfo);
+        variables.put("dob", student.getDob() != null ? student.getDob().toString() : "N/A");
+        variables.put("bloodGroup", "N/A");
+        variables.put("fatherName", fatherName);
+        variables.put("emergencyContact", "N/A");
+        variables.put("profilePicture", student.getProfilePicture());
+
+        return pdfGenerationService.generatePdf("id-card", variables);
+    }
+
+    // ======================== DELETE STUDENT ========================
 
     @Transactional
     public void deleteStudent(UUID id) {

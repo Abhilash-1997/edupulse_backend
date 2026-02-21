@@ -37,6 +37,7 @@ public class ExamController {
         }
 
         @GetMapping
+        @RequireAdminOrTeacher
         public ResponseEntity<ApiResponse<List<ExamResponse>>> getExams(
                         @RequestParam(required = false) UUID classId,
                         @RequestParam(required = false) UUID sectionId) {
@@ -66,6 +67,7 @@ public class ExamController {
         }
 
         @GetMapping("/results")
+        @RequireAdminOrTeacher
         public ResponseEntity<ApiResponse<List<ExamResultsByStudentResponse>>> getExamResults(
                         @RequestParam(required = false) UUID examId,
                         @RequestParam(required = false) UUID subjectId,

@@ -4,6 +4,8 @@ import com.school.management.dto.request.BulkUpdateStudentsRequest;
 import com.school.management.dto.request.CreateStudentRequest;
 import com.school.management.dto.request.UpdateStudentRequest;
 import com.school.management.dto.response.StudentResponse;
+import com.school.management.security.annotation.RequireAdmin;
+import com.school.management.security.annotation.RequireAdminOrTeacher;
 import com.school.management.service.StudentService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +30,7 @@ public class StudentController {
     // =================== CREATE STUDENT ============================
 
     @PostMapping
+    @RequireAdminOrTeacher
     public ResponseEntity<StudentResponse> createStudent(
             @Valid @RequestBody CreateStudentRequest createStudentRequest) {
         StudentResponse studentResponse = studentService.createStudent(createStudentRequest);
@@ -37,6 +40,7 @@ public class StudentController {
     // =================== UPDATE STUDENT ============================
 
     @PutMapping("/{id}")
+    @RequireAdminOrTeacher
     public ResponseEntity<StudentResponse> updateStudent(@PathVariable UUID id,
             @Valid @RequestBody UpdateStudentRequest request) {
 
@@ -47,6 +51,7 @@ public class StudentController {
     // =================== BULK UPDATE STUDENT ============================
 
     @PutMapping("/bulk-update")
+    @RequireAdminOrTeacher
     public ResponseEntity<Void> bulkUpdateStudents(@Valid @RequestBody BulkUpdateStudentsRequest request) {
         studentService.bulkUpdateStudents(request);
         return ResponseEntity.ok().build();
@@ -55,6 +60,7 @@ public class StudentController {
     // =================== GET ALL STUDENT ============================
 
     @GetMapping
+    @RequireAdminOrTeacher
     public ResponseEntity<List<StudentResponse>> getAllStudents(@RequestParam(required = false) UUID parentId,
             @RequestParam(required = false) UUID classId) {
         List<StudentResponse> response = studentService.getAllStudents(parentId, classId);
@@ -64,6 +70,7 @@ public class StudentController {
     // =================== GET STUDENT BY ID ============================
 
     @GetMapping("/{id}")
+    @RequireAdminOrTeacher
     public ResponseEntity<StudentResponse> getStudentsById(@PathVariable UUID id) {
         StudentResponse response = studentService.getStudentById(id);
         return ResponseEntity.ok().body(response);

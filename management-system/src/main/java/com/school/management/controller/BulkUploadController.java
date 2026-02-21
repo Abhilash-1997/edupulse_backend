@@ -3,6 +3,7 @@ package com.school.management.controller;
 import com.school.management.dto.response.ApiResponse;
 import com.school.management.dto.response.BulkUploadResponse;
 import com.school.management.security.annotation.RequireAdmin;
+import com.school.management.security.annotation.RequireAdminOrTeacher;
 import com.school.management.security.annotation.RequireTeacher;
 import com.school.management.service.BulkUploadService;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +32,7 @@ public class BulkUploadController {
     // ========================= ATTENDANCE =========================
 
     @PostMapping("/attendance")
-    @RequireTeacher
+    @RequireAdminOrTeacher
     public ResponseEntity<ApiResponse<BulkUploadResponse>> uploadAttendance(
             @RequestParam("file") MultipartFile file) {
         BulkUploadResponse response = bulkUploadService.uploadAttendance(file);

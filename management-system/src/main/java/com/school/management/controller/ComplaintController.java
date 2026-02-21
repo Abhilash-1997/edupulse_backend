@@ -7,6 +7,7 @@ import com.school.management.dto.request.UpdateComplaintStatusRequest;
 import com.school.management.dto.response.ApiResponse;
 import com.school.management.dto.response.ComplaintResponse;
 import com.school.management.security.annotation.RequireAdmin;
+import com.school.management.security.annotation.RequireAdminOrTeacher;
 import com.school.management.security.annotation.RequireParent;
 import com.school.management.service.ComplaintService;
 import jakarta.validation.Valid;
@@ -56,7 +57,7 @@ public class ComplaintController {
      * GET /complaints/my?status=...&priority=...
      */
     @GetMapping("/my-complaints")
-    @PreAuthorize("hasRole('PARENT')")
+    @RequireParent
     public ResponseEntity<ApiResponse<List<ComplaintResponse>>> getMyComplaints(
             @RequestParam(required = false) ComplaintStatus status,
             @RequestParam(required = false) ComplaintPriority priority) {
@@ -76,7 +77,7 @@ public class ComplaintController {
      * GET /complaints?status=...&priority=...
      */
     @GetMapping("/")
-    @PreAuthorize("hasAnyRole('SCHOOL_ADMIN', 'SUPER_ADMIN', 'TEACHER')")
+    @RequireAdminOrTeacher
     public ResponseEntity<ApiResponse<List<ComplaintResponse>>> getComplaints(
             @RequestParam(required = false) ComplaintStatus status,
             @RequestParam(required = false) ComplaintPriority priority) {

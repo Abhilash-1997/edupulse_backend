@@ -6,6 +6,7 @@ import com.school.management.dto.response.ApiResponse;
 import com.school.management.dto.response.AttendanceResponse;
 import com.school.management.dto.response.AttendanceStatusResponse;
 import com.school.management.security.annotation.RequireAdmin;
+import com.school.management.security.annotation.RequireAdminOrTeacher;
 import com.school.management.service.AttendanceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -59,6 +60,7 @@ public class AttendanceController {
      * Access: All authenticated users
      */
     @GetMapping
+    @RequireAdminOrTeacher
     public ResponseEntity<ApiResponse<AttendanceStatusResponse>> getAttendance(
             @RequestParam UUID sectionId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
@@ -79,6 +81,7 @@ public class AttendanceController {
      * Access: All authenticated users
      */
     @GetMapping("/report")
+    @RequireAdminOrTeacher
     public ResponseEntity<ApiResponse<List<AttendanceResponse>>> getAttendanceReport(
             @RequestParam(required = false) UUID sectionId,
             @RequestParam(required = false) UUID studentId,
@@ -100,6 +103,7 @@ public class AttendanceController {
      * Access: All authenticated users
      */
     @PutMapping("/{id}")
+    @RequireAdminOrTeacher
     public ResponseEntity<ApiResponse<AttendanceResponse>> updateAttendance(
             @PathVariable UUID id,
             @Valid @RequestBody UpdateAttendanceRequest request) {

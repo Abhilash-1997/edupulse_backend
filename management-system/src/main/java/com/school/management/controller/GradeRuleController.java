@@ -47,6 +47,22 @@ public class GradeRuleController {
     }
 
     /**
+     * Bulk create grade rules
+     * POST /api/grade-rules/bulk
+     */
+    @PostMapping("/bulk")
+    public ResponseEntity<ApiResponse<List<GradeRuleResponse>>> createGradeRules(
+            @Valid @RequestBody List<CreateGradeRuleRequest> requests) {
+
+        log.info("Bulk creating {} grade rules", requests.size());
+
+        List<GradeRuleResponse> gradeRules = gradeRuleService.createGradeRules(requests);
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.successWithCount("Grade rules created successfully", gradeRules, gradeRules.size()));
+    }
+
+    /**
      * Get all grade rules
      * GET /api/grade-rules
      */
@@ -57,8 +73,7 @@ public class GradeRuleController {
         List<GradeRuleResponse> gradeRules = gradeRuleService.getGradeRules();
 
         return ResponseEntity.ok(
-                ApiResponse.successWithCount("Grade rules retrieved successfully", gradeRules, gradeRules.size())
-        );
+                ApiResponse.successWithCount("Grade rules retrieved successfully", gradeRules, gradeRules.size()));
     }
 
     /**
@@ -72,8 +87,7 @@ public class GradeRuleController {
         GradeRuleResponse gradeRule = gradeRuleService.getGradeRuleById(id);
 
         return ResponseEntity.ok(
-                ApiResponse.success("Grade rule retrieved successfully", gradeRule)
-        );
+                ApiResponse.success("Grade rule retrieved successfully", gradeRule));
     }
 
     /**
@@ -101,8 +115,7 @@ public class GradeRuleController {
         gradeRuleService.deleteGradeRule(id);
 
         return ResponseEntity.ok(
-                ApiResponse.success("Grade rule deleted successfully", null)
-        );
+                ApiResponse.success("Grade rule deleted successfully", null));
     }
 
     /**
@@ -116,7 +129,6 @@ public class GradeRuleController {
         String grade = gradeRuleService.calculateGrade(percentage);
 
         return ResponseEntity.ok(
-                ApiResponse.success("Grade calculated successfully", grade)
-        );
+                ApiResponse.success("Grade calculated successfully", grade));
     }
 }

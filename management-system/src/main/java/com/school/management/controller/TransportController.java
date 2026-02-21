@@ -61,6 +61,18 @@ public class TransportController {
     }
 
     /**
+     * Get driver's assigned bus (Bus Driver only)
+     * GET /transport/buses/my-bus
+     */
+    @GetMapping("/buses/my-bus")
+    @PreAuthorize("hasRole('BUS_DRIVER')")
+    public ResponseEntity<ApiResponse<BusResponse>> getDriverBus() {
+        log.info("Fetching driver's assigned bus");
+        BusResponse response = transportService.getDriverBus();
+        return ResponseEntity.ok(ApiResponse.success("Driver bus retrieved successfully", response));
+    }
+
+    /**
      * Get bus by ID (Admin, Staff, Bus Driver)
      * GET /transport/buses/{id}
      */

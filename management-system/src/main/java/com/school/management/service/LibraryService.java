@@ -144,6 +144,18 @@ public class LibraryService {
     }
 
     @Transactional(readOnly = true)
+    public List<BookResponse> getLibraryBook(UUID sectionId) {
+        UUID schoolId = SecurityUtils.getCurrentUserSchoolId();
+
+        List<Book> books = bookRepository.findBySchool_IdAndSection_IdAndDeletedAtIsNull(
+                schoolId, sectionId);
+
+        return books.stream()
+                .map(this::mapToBookResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
     public BookResponse getBookDetails(UUID id) {
         UUID schoolId = SecurityUtils.getCurrentUserSchoolId();
 
@@ -216,7 +228,7 @@ public class LibraryService {
 
         // Check book availability
         Book book = bookRepository.findByIdAndSchool_IdAndDeletedAtIsNull(
-                        request.getBookId(), schoolId)
+                request.getBookId(), schoolId)
                 .orElseThrow(() -> new ResourceNotFoundException("Book not found"));
 
         if (book.getAvailable() < 1) {
@@ -263,11 +275,9 @@ public class LibraryService {
             throw new BadRequestException("Book already returned");
         }
 
-        transaction.setReturnDate(request.getReturnDate() != null ?
-                request.getReturnDate() : LocalDateTime.now());
+        transaction.setReturnDate(request.getReturnDate() != null ? request.getReturnDate() : LocalDateTime.now());
         transaction.setStatus(LibraryTransactionStatus.RETURNED);
-        transaction.setFineAmount(request.getFineAmount() != null ?
-                request.getFineAmount() : BigDecimal.ZERO);
+        transaction.setFineAmount(request.getFineAmount() != null ? request.getFineAmount() : BigDecimal.ZERO);
         transaction.setRemarks(request.getRemarks());
 
         libraryTransactionRepository.save(transaction);
@@ -294,7 +304,7 @@ public class LibraryService {
 
     @Transactional(readOnly = true)
     public List<LibraryTransactionResponse> getTransactions(UUID userId,
-                                                            LibraryTransactionStatus status) {
+            LibraryTransactionStatus status) {
         UUID schoolId = SecurityUtils.getCurrentUserSchoolId();
 
         List<LibraryTransaction> transactions;
@@ -353,6 +363,13 @@ public class LibraryService {
     }
 
     private BookResponse mapToBookResponse(Book book) {
+        List<LibraryTransaction> transactions = libraryTransactionRepository
+                .findByBook_IdAndDeletedAtIsNull(book.getId());
+
+        List<LibraryTransactionResponse> transactionResponses = transactions.stream()
+                .map(this::mapToLibraryTransactionResponse)
+                .collect(Collectors.toList());
+
         return BookResponse.builder()
                 .id(book.getId())
                 .title(book.getTitle())
@@ -365,11 +382,33 @@ public class LibraryService {
                 .description(book.getDescription())
                 .sectionId(book.getSection().getId())
                 .sectionName(book.getSection().getName())
+                .libraryTransactions(transactionResponses)
                 .build();
     }
 
     private LibraryTransactionResponse mapToLibraryTransactionResponse(
             LibraryTransaction transaction) {
+        UserResponse userResponse = null;
+        if (transaction.getUser() != null) {
+            User user = transaction.getUser();
+            userResponse = UserResponse.builder()
+                    .id(user.getId())
+                    .name(user.getName())
+                    .email(user.getEmail())
+                    .role(user.getRole())
+                    .build();
+        }
+
+        StudentResponse studentResponse = null;
+        if (transaction.getStudent() != null) {
+            Student student = transaction.getStudent();
+            studentResponse = StudentResponse.builder()
+                    .id(student.getId())
+                    .name(student.getName())
+                    .admissionNumber(student.getAdmissionNumber())
+                    .build();
+        }
+
         return LibraryTransactionResponse.builder()
                 .id(transaction.getId())
                 .issueDate(transaction.getIssueDate())
@@ -382,8 +421,9 @@ public class LibraryService {
                 .bookTitle(transaction.getBook().getTitle())
                 .bookIsbn(transaction.getBook().getIsbn())
                 .userId(transaction.getUser() != null ? transaction.getUser().getId() : null)
-                .studentId(transaction.getStudent() != null ?
-                        transaction.getStudent().getId() : null)
+                .studentId(transaction.getStudent() != null ? transaction.getStudent().getId() : null)
+                .user(userResponse)
+                .student(studentResponse)
                 .build();
     }
 }

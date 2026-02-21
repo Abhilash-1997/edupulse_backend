@@ -73,7 +73,6 @@ public class StaffController {
     }
 
     @GetMapping("/{id}/offer-letter")
-    @RequireAdmin
     public ResponseEntity<byte[]> generateOfferLetter(
             @PathVariable UUID id,
             HttpServletRequest request) {

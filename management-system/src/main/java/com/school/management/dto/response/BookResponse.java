@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -24,4 +25,5 @@ public class BookResponse {
     private String description;
     private UUID sectionId;
     private String sectionName;
+    private List<LibraryTransactionResponse> libraryTransactions;
 }

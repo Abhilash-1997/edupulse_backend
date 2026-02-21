@@ -12,6 +12,7 @@ import com.school.management.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,6 +35,7 @@ public class TransportService {
     private final SchoolRepository schoolRepository;
     private final UserRepository userRepository;
     private final SimpMessagingTemplate messagingTemplate;
+    private final StaffProfileRepository staffProfileRepository;
 
     // ============= BUS MANAGEMENT =============
 
@@ -66,7 +68,7 @@ public class TransportService {
 
         if (request.getDriverId() != null) {
             User driver = userRepository.findByIdAndSchool_IdAndDeletedAtIsNull(
-                            request.getDriverId(), schoolId)
+                    request.getDriverId(), schoolId)
                     .orElseThrow(() -> new ResourceNotFoundException("Driver not found"));
             bus.setDriver(driver);
         }
@@ -102,6 +104,29 @@ public class TransportService {
         return mapToBusResponse(bus);
     }
 
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasRole('BUS_DRIVER')")
+    public BusResponse getDriverBus() {
+        UUID driverId = SecurityUtils.getCurrentUserId();
+        UUID schoolId = SecurityUtils.getCurrentUserSchoolId();
+
+        Bus bus = busRepository.findByDriver_IdAndSchool_IdAndDeletedAtIsNull(driverId, schoolId)
+                .orElseThrow(() -> new ResourceNotFoundException("No bus assigned to this driver"));
+
+        // Fetch active routes for this bus
+        List<BusRoute> activeRoutes = busRouteRepository.findByBus_IdAndIsActiveAndDeletedAtIsNull(
+                bus.getId(), true);
+
+        List<BusRouteResponse> routeResponses = activeRoutes.stream()
+                .map(this::mapToBusRouteResponse)
+                .collect(Collectors.toList());
+
+        BusResponse response = mapToBusResponse(bus);
+        response.setRoutes(routeResponses);
+
+        return response;
+    }
+
     @Transactional
     public BusResponse updateBus(UUID id, UpdateBusRequest request) {
         UUID schoolId = SecurityUtils.getCurrentUserSchoolId();
@@ -126,7 +151,7 @@ public class TransportService {
         }
         if (request.getDriverId() != null) {
             User driver = userRepository.findByIdAndSchool_IdAndDeletedAtIsNull(
-                            request.getDriverId(), schoolId)
+                    request.getDriverId(), schoolId)
                     .orElseThrow(() -> new ResourceNotFoundException("Driver not found"));
             bus.setDriver(driver);
         }
@@ -253,7 +278,7 @@ public class TransportService {
         BusRoute route = null;
         if (request.getRouteId() != null) {
             route = busRouteRepository.findByIdAndSchool_IdAndDeletedAtIsNull(
-                            request.getRouteId(), schoolId)
+                    request.getRouteId(), schoolId)
                     .orElseThrow(() -> new ResourceNotFoundException("Route not found"));
         }
 
@@ -285,7 +310,7 @@ public class TransportService {
         UUID schoolId = SecurityUtils.getCurrentUserSchoolId();
 
         BusTrip trip = busTripRepository.findByBus_IdAndStatusAndDeletedAtIsNull(
-                        busId, BusTripStatus.IN_PROGRESS)
+                busId, BusTripStatus.IN_PROGRESS)
                 .orElseThrow(() -> new BadRequestException("No active trip found for this bus"));
 
         if (!trip.getSchool().getId().equals(schoolId)) {
@@ -311,7 +336,7 @@ public class TransportService {
 
     @Transactional(readOnly = true)
     public List<BusTripResponse> getTrips(UUID busId, BusTripStatus status,
-                                          LocalDateTime startDate, LocalDateTime endDate) {
+            LocalDateTime startDate, LocalDateTime endDate) {
         UUID schoolId = SecurityUtils.getCurrentUserSchoolId();
 
         List<BusTrip> trips = busTripRepository.findByFilters(schoolId, busId, status, startDate, endDate);
@@ -330,7 +355,7 @@ public class TransportService {
 
         // Get active trip
         BusTrip activeTrip = busTripRepository.findByBus_IdAndStatusAndDeletedAtIsNull(
-                        request.getBusId(), BusTripStatus.IN_PROGRESS)
+                request.getBusId(), BusTripStatus.IN_PROGRESS)
                 .orElse(null);
 
         // Deduplication: Check last location update (within 5 seconds)
@@ -401,7 +426,7 @@ public class TransportService {
                 .orElse(null);
 
         BusTrip activeTrip = busTripRepository.findByBus_IdAndStatusAndDeletedAtIsNull(
-                        busId, BusTripStatus.IN_PROGRESS)
+                busId, BusTripStatus.IN_PROGRESS)
                 .orElse(null);
 
         return LiveBusLocationResponse.builder()
@@ -430,7 +455,7 @@ public class TransportService {
                 .orElseThrow(() -> new ResourceNotFoundException("School not found"));
 
         Student student = studentRepository.findByIdAndSchool_IdAndDeletedAtIsNull(
-                        request.getStudentId(), schoolId)
+                request.getStudentId(), schoolId)
                 .orElseThrow(() -> new ResourceNotFoundException("Student not found"));
 
         Bus bus = busRepository.findByIdAndSchool_IdAndDeletedAtIsNull(request.getBusId(), schoolId)
@@ -447,7 +472,7 @@ public class TransportService {
         BusRoute route = null;
         if (request.getRouteId() != null) {
             route = busRouteRepository.findByIdAndSchool_IdAndDeletedAtIsNull(
-                            request.getRouteId(), schoolId)
+                    request.getRouteId(), schoolId)
                     .orElseThrow(() -> new ResourceNotFoundException("Route not found"));
         }
 
@@ -499,6 +524,20 @@ public class TransportService {
     // ============= MAPPERS =============
 
     private BusResponse mapToBusResponse(Bus bus) {
+        UserResponse driverInfo = null;
+        if (bus.getDriver() != null) {
+            User driver = bus.getDriver();
+            driverInfo = UserResponse.builder()
+                    .id(driver.getId())
+                    .name(driver.getName())
+                    .email(driver.getEmail())
+                    .phone(driver.getPhone())
+                    .role(driver.getRole())
+                    .isActive(driver.getIsActive())
+                    .schoolId(driver.getSchool() != null ? driver.getSchool().getId() : null)
+                    .build();
+        }
+
         return BusResponse.builder()
                 .id(bus.getId())
                 .busNumber(bus.getBusNumber())
@@ -507,6 +546,7 @@ public class TransportService {
                 .isActive(bus.getIsActive())
                 .deviceId(bus.getDeviceId())
                 .driverId(bus.getDriver() != null ? bus.getDriver().getId() : null)
+                .driver(driverInfo)
                 .build();
     }
 

@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -21,4 +22,5 @@ public class BusResponse {
     private String deviceId;
     private UUID driverId;
     private UserResponse driver;
+    private List<BusRouteResponse> routes;
 }

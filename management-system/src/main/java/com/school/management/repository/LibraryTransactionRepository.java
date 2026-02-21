@@ -14,20 +14,21 @@ import java.util.UUID;
 @Repository
 public interface LibraryTransactionRepository extends BaseRepository<LibraryTransaction> {
 
-    Optional<LibraryTransaction> findByIdAndDeletedAtIsNull(UUID id);
+        Optional<LibraryTransaction> findByIdAndDeletedAtIsNull(UUID id);
 
-    List<LibraryTransaction> findBySchool_IdAndDeletedAtIsNull(UUID schoolId);
+        List<LibraryTransaction> findBySchool_IdAndDeletedAtIsNull(UUID schoolId);
 
-    List<LibraryTransaction> findBySchool_IdAndUser_IdAndDeletedAtIsNull(UUID schoolId, UUID userId);
+        List<LibraryTransaction> findBySchool_IdAndUser_IdAndDeletedAtIsNull(UUID schoolId, UUID userId);
 
-    List<LibraryTransaction> findBySchool_IdAndStatusAndDeletedAtIsNull(
-            UUID schoolId,
-            LibraryTransactionStatus status
-    );
+        List<LibraryTransaction> findBySchool_IdAndStatusAndDeletedAtIsNull(
+                        UUID schoolId,
+                        LibraryTransactionStatus status);
 
-    long countBySchool_IdAndStatusAndDeletedAtIsNull(UUID schoolId, LibraryTransactionStatus status);
+        long countBySchool_IdAndStatusAndDeletedAtIsNull(UUID schoolId, LibraryTransactionStatus status);
 
-    @Query("SELECT COUNT(lt) FROM LibraryTransaction lt WHERE lt.school.id = :schoolId " +
-            "AND lt.status = 'ISSUED' AND lt.dueDate < :now AND lt.deletedAt IS NULL")
-    long countOverdueBooks(@Param("schoolId") UUID schoolId, @Param("now") LocalDateTime now);
+        @Query("SELECT COUNT(lt) FROM LibraryTransaction lt WHERE lt.school.id = :schoolId " +
+                        "AND lt.status = 'ISSUED' AND lt.dueDate < :now AND lt.deletedAt IS NULL")
+        long countOverdueBooks(@Param("schoolId") UUID schoolId, @Param("now") LocalDateTime now);
+
+        List<LibraryTransaction> findByBook_IdAndDeletedAtIsNull(UUID bookId);
 }

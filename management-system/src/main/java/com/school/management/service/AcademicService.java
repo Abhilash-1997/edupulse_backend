@@ -71,7 +71,6 @@ public class AcademicService {
                                 .collect(Collectors.toList());
         }
 
-
         @Transactional(readOnly = true)
         public List<ClassResponse> getAllClassesWithCount(UUID overrideSchoolId) {
                 UUID schoolId = SecurityUtils.isSuperAdmin() && overrideSchoolId != null ? overrideSchoolId
@@ -89,13 +88,11 @@ public class AcademicService {
                                 .collect(Collectors.toList());
         }
 
-
         @Transactional(readOnly = true)
         public List<String> getStandards() {
                 UUID schoolId = SecurityUtils.getCurrentUserSchoolId();
                 return classRepository.findDistinctClassNamesBySchoolId(schoolId);
         }
-
 
         @Transactional(readOnly = true)
         public List<ClassSectionResponse> getDivisions(String standard) {
@@ -105,7 +102,6 @@ public class AcademicService {
                                 .map(this::mapToClassSectionResponse)
                                 .collect(Collectors.toList());
         }
-
 
         @Transactional(readOnly = true)
         public List<ClassSectionResponse> getAllSections(UUID overrideSchoolId) {
@@ -118,7 +114,6 @@ public class AcademicService {
                                 .map(this::mapToClassSectionResponse)
                                 .collect(Collectors.toList());
         }
-
 
         @Transactional
         public ClassSectionResponse assignClassTeacher(UUID sectionId, UUID teacherId) {
@@ -135,7 +130,6 @@ public class AcademicService {
 
                 return mapToClassSectionResponse(section);
         }
-
 
         @Transactional(readOnly = true)
         public List<UserResponse> getTeachers(UUID overrideSchoolId) {
@@ -486,6 +480,10 @@ public class AcademicService {
                                 .name(subject.getName())
                                 .code(subject.getCode())
                                 .classId(subject.getClassEntity().getId())
+                                .classInfo(ClassResponse.builder()
+                                                .id(subject.getClassEntity().getId())
+                                                .name(subject.getClassEntity().getName())
+                                                .build())
                                 .build();
         }
 
@@ -497,17 +495,20 @@ public class AcademicService {
                                 .endTime(timetable.getEndTime())
                                 .classroom(timetable.getClassroom())
                                 .subject(mapToSubjectResponse(timetable.getSubject()))
-                                .teacher(timetable.getTeacher() != null ? mapToUserResponse(timetable.getTeacher()) : null)
-                                .section(timetable.getSection() != null ? mapToClassSectionResponse(timetable.getSection()) : null)
+                                .teacher(timetable.getTeacher() != null ? mapToUserResponse(timetable.getTeacher())
+                                                : null)
+                                .section(timetable.getSection() != null
+                                                ? mapToClassSectionResponse(timetable.getSection())
+                                                : null)
 
-                        .build();
+                                .build();
         }
 
-    private UserResponse mapToUserResponse(User user) {
-        return UserResponse.builder()
-                .id(user.getId())
-                .name(user.getName())
-                .email(user.getEmail())
-                .build();
-    }
+        private UserResponse mapToUserResponse(User user) {
+                return UserResponse.builder()
+                                .id(user.getId())
+                                .name(user.getName())
+                                .email(user.getEmail())
+                                .build();
+        }
 }

@@ -71,6 +71,78 @@ public class GradeRuleService {
     }
 
     /**
+     * Bulk create grade rules
+     */
+    @Transactional
+    public List<GradeRuleResponse> createGradeRules(List<CreateGradeRuleRequest> requests) {
+        log.info("Requests to create grade rules for school: " + requests);
+        UUID schoolId = SecurityUtils.getCurrentUserSchoolId();
+
+        School school = schoolRepository.findByIdAndDeletedAtIsNull(schoolId)
+                .orElseThrow(() -> new ResourceNotFoundException("School not found"));
+
+        // Validate each request
+        for (CreateGradeRuleRequest request : requests) {
+            if (request.getMinPercentage() < 0 || request.getMinPercentage() > 100) {
+                throw new BadRequestException(
+                        "Minimum percentage must be between 0 and 100 for grade: " + request.getGrade());
+            }
+            if (request.getMaxPercentage() < 0 || request.getMaxPercentage() > 100) {
+                throw new BadRequestException(
+                        "Maximum percentage must be between 0 and 100 for grade: " + request.getGrade());
+            }
+            if (request.getMinPercentage() >= request.getMaxPercentage()) {
+                throw new BadRequestException(
+                        "Minimum percentage must be less than maximum percentage for grade: " + request.getGrade());
+            }
+        }
+
+        // Check for overlaps within the incoming list itself
+        for (int i = 0; i < requests.size(); i++) {
+            for (int j = i + 1; j < requests.size(); j++) {
+                if (rangesOverlap(
+                        requests.get(i).getMinPercentage(), requests.get(i).getMaxPercentage(),
+                        requests.get(j).getMinPercentage(), requests.get(j).getMaxPercentage())) {
+                    throw new BadRequestException(
+                            "Grade ranges overlap between: " + requests.get(i).getGrade() + " and "
+                                    + requests.get(j).getGrade());
+                }
+            }
+        }
+
+        // Check for overlaps against existing rules in DB
+        List<GradeRule> existingRules = gradeRuleRepository.findBySchool_IdAndDeletedAtIsNull(schoolId);
+        for (CreateGradeRuleRequest request : requests) {
+            for (GradeRule existing : existingRules) {
+                if (rangesOverlap(
+                        request.getMinPercentage(), request.getMaxPercentage(),
+                        existing.getMinPercentage(), existing.getMaxPercentage())) {
+                    throw new BadRequestException(
+                            "Grade range for " + request.getGrade() + " overlaps with existing rule: "
+                                    + existing.getGrade());
+                }
+            }
+        }
+
+        // Build and save all grade rules
+        List<GradeRule> gradeRules = requests.stream()
+                .map(request -> GradeRule.builder()
+                        .school(school)
+                        .grade(request.getGrade())
+                        .minPercentage(request.getMinPercentage())
+                        .maxPercentage(request.getMaxPercentage())
+                        .description(request.getDescription())
+                        .build())
+                .collect(Collectors.toList());
+
+        gradeRules = gradeRuleRepository.saveAll(gradeRules);
+
+        return gradeRules.stream()
+                .map(this::mapToGradeRuleResponse)
+                .collect(Collectors.toList());
+    }
+
+    /**
      * Get all grade rules
      */
     @Transactional(readOnly = true)
@@ -125,7 +197,8 @@ public class GradeRuleService {
             // Check for overlapping ranges (excluding current rule)
             List<GradeRule> existingRules = gradeRuleRepository.findBySchool_IdAndDeletedAtIsNull(schoolId);
             for (GradeRule existing : existingRules) {
-                if (existing.getId().equals(id)) continue;
+                if (existing.getId().equals(id))
+                    continue;
 
                 if (rangesOverlap(
                         request.getMinPercentage(), request.getMaxPercentage(),
@@ -192,6 +265,7 @@ public class GradeRuleService {
                 .grade(gradeRule.getGrade())
                 .minPercentage(gradeRule.getMinPercentage())
                 .maxPercentage(gradeRule.getMaxPercentage())
+                .description(gradeRule.getDescription())
                 .build();
     }
 }

@@ -172,7 +172,6 @@ public class AuthService {
         if (!passwordUtil.verifyPassword(request.getPassword(), user.getPasswordHash())) {
             throw new UnauthorizedException("Invalid credentials");
         }
-
         // Check if user is active
         if (!user.getIsActive()) {
             throw new UnauthorizedException("Account is deactivated");
@@ -275,28 +274,35 @@ public class AuthService {
     }
 
     private AuthResponse buildAuthResponse(String token, User user, School school) {
-        AuthResponse.AuthResponseBuilder builder = AuthResponse.builder()
-                .token(token)
-                .user(mapToUserResponse(user))
-                .school(mapToSchoolResponse(school));
+        UserResponse userResponse = mapToUserResponse(user);
 
-        // Add staff profile if applicable
-        if (user.getRole() == UserRole.TEACHER ||
+        // Nest school inside user (matches Node.js: user.School)
+        userResponse.setSchool(mapToSchoolResponse(school));
+
+        // Add staff profile if applicable (matches Node.js: user.staffProfile)
+        if (user.getRole() == UserRole.SCHOOL_ADMIN ||
+                user.getRole() == UserRole.TEACHER ||
                 user.getRole() == UserRole.STAFF ||
                 user.getRole() == UserRole.LIBRARIAN ||
                 user.getRole() == UserRole.BUS_DRIVER) {
 
             staffProfileRepository.findByUser_IdAndDeletedAtIsNull(user.getId())
-                    .ifPresent(staff -> builder.staffProfile(mapToStaffProfileResponse(staff)));
+                    .ifPresent(staff -> userResponse.setStaffProfile(mapToStaffProfileResponse(staff)));
         }
 
-        // Add parent profile if applicable
+        // Add parent profile if applicable (matches Node.js: user.parent)
         if (user.getRole() == UserRole.PARENT) {
             parentRepository.findByUser_IdAndDeletedAtIsNull(user.getId())
-                    .ifPresent(parent -> builder.parent(mapToParentResponse(parent)));
+                    .ifPresent(parent -> userResponse.setParent(mapToParentResponse(parent)));
         }
 
-        return builder.build();
+        return AuthResponse.builder()
+                .token(token)
+                .user(userResponse)
+                .school(mapToSchoolResponse(school))
+                .staffProfile(userResponse.getStaffProfile())
+                .parent(userResponse.getParent())
+                .build();
     }
 
     // Mapper methods (simplified - ideally use MapStruct)

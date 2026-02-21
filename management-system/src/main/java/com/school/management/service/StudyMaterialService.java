@@ -446,7 +446,8 @@ public class StudyMaterialService {
         String streamToken = jwtTokenProvider.generateStreamToken(materialId, userId, schoolId);
 
         // Build HLS URL (GCS signed URL)
-        String streamUrl = gcsService.generateSignedUrl(material.getHlsPath());
+//        String streamUrl = gcsService.generateSignedUrl(material.getHlsPath());
+        String streamUrl = "/api/study-materials/stream/" + materialId + "/master.m3u8";
 
         return StreamTokenResponse.builder()
                 .streamToken(streamToken)
@@ -481,13 +482,11 @@ public class StudyMaterialService {
      * Stream HLS file (master.m3u8, playlist.m3u8, or .ts segments) from GCS
      */
     @Transactional(readOnly = true)
-    public HlsStreamResponse streamHlsFile(String filename, String token) {
-        // Validate token
+    public HlsStreamResponse streamHlsFile(UUID materialId, String filename, String token) {
         if (token == null || token.isEmpty()) {
             throw new UnauthorizedException("Missing stream token");
         }
 
-        UUID materialId;
         UUID schoolId;
 
         try {
@@ -495,9 +494,7 @@ public class StudyMaterialService {
                 throw new UnauthorizedException("Invalid or expired stream token");
             }
 
-            // Verify and extract claims from token
             DecodedJWT decodedJWT = jwtTokenProvider.verifyStreamToken(token);
-            materialId = UUID.fromString(decodedJWT.getClaim("materialId").asString());
             schoolId = UUID.fromString(decodedJWT.getClaim("schoolId").asString());
 
         } catch (Exception e) {
@@ -518,10 +515,6 @@ public class StudyMaterialService {
         if (filename.contains("..") || filename.contains("/") || filename.contains("\\")) {
             throw new ForbiddenException("Access denied");
         }
-
-        // Construct GCS object path
-        // If hlsPath is "study-materials/section-id/video-id/hls/master.m3u8"
-        // Extract the directory: "study-materials/section-id/video-id/hls/"
         String hlsDir = material.getHlsPath().substring(0, material.getHlsPath().lastIndexOf("/") + 1);
         String gcsObjectPath = hlsDir + filename;
 
@@ -535,12 +528,11 @@ public class StudyMaterialService {
             throw new BadRequestException("Invalid file type");
         }
 
-        // Generate signed URL for the HLS file (short expiry since it's chunked
-        // streaming)
-        String signedUrl = gcsService.generateSignedUrlWithExpiry(gcsObjectPath, 5); // 5 minutes
+        log.info("Fetching HLS file from GCS path: {}", gcsObjectPath);
 
         return HlsStreamResponse.builder()
-                .signedUrl(signedUrl)
+//                .signedUrl(signedUrl)
+                .gcsObjectPath(gcsObjectPath)
                 .contentType(contentType)
                 .filename(filename)
                 .build();

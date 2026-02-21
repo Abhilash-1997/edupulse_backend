@@ -91,4 +91,9 @@ public class GcsService {
                 Storage.SignUrlOption.withV4Signature());
         return url.toString();
     }
+
+    public byte[] downloadFileAsBytes(String objectPath) {
+        Blob blob = storage.get(bucketName, objectPath);
+        return blob.getContent();
+    }
 }

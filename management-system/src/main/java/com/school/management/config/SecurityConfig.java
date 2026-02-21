@@ -80,7 +80,8 @@ public class SecurityConfig {
                                 "/study-materials/hls/**",
                                 "/uploads/**",
                                 "/error",
-                                "/ws-chat/**"
+                                "/ws-chat/**",
+                                "/study-materials/stream/**"
                         ).permitAll()
 
                         // All other endpoints require authentication

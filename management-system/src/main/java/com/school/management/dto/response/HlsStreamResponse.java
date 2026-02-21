@@ -8,7 +8,8 @@ import lombok.Setter;
 @Setter
 @Builder
 public class HlsStreamResponse {
-    private String signedUrl;
+    private String gcsObjectPath;
+//    private String signedUrl;  //for further Security
     private String contentType;
     private String filename;
 }

@@ -9,6 +9,7 @@ import com.school.management.dto.response.HlsStreamResponse;
 import com.school.management.dto.response.StreamTokenResponse;
 import com.school.management.dto.response.StudyMaterialResponse;
 import com.school.management.dto.response.StudyMaterialSectionResponse;
+import com.school.management.service.GcsService;
 import com.school.management.service.StudyMaterialService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.UUID;
 
@@ -36,6 +38,7 @@ import java.util.UUID;
 public class StudyMaterialController {
 
     private final StudyMaterialService studyMaterialService;
+    private final GcsService gcsService;
 
     // ======================== STREAMING (Public with token auth)
     // ========================
@@ -45,17 +48,42 @@ public class StudyMaterialController {
      * GET /study-materials/hls/{filename}
      * Returns a redirect to the GCS signed URL for the HLS file.
      */
-    @GetMapping("/hls/{filename}")
-    public ResponseEntity<Void> streamHLS(
+    @GetMapping("/stream/{materialId}/{filename}")
+    public ResponseEntity<byte[]> streamHLS(
+            @PathVariable UUID materialId,
             @PathVariable String filename,
-            @RequestParam String token) {
-        log.info("Streaming HLS file: {}", filename);
-        HlsStreamResponse response = studyMaterialService.streamHlsFile(filename, token);
+            @RequestParam("token") String token) {
 
-        return ResponseEntity.status(HttpStatus.FOUND)
-                .location(URI.create(response.getSignedUrl()))
-                .header(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate")
-                .build();
+        log.info("Streaming HLS file: material={}, file={}", materialId, filename);
+
+        HlsStreamResponse response =
+                studyMaterialService.streamHlsFile(materialId, filename, token);
+
+        byte[] fileBytes =
+                gcsService.downloadFileAsBytes(response.getGcsObjectPath());
+
+        // 🔥 IMPORTANT PART — Rewrite manifest
+        if (filename.endsWith(".m3u8")) {
+
+            String content = new String(fileBytes, StandardCharsets.UTF_8);
+
+            // Append token to each .ts file reference
+            content = content.replaceAll(
+                    "(segment_\\d+\\.ts)",
+                    "$1?token=" + token
+            );
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_TYPE, "application/vnd.apple.mpegurl")
+                    .header(HttpHeaders.CACHE_CONTROL, "no-store")
+                    .body(content.getBytes(StandardCharsets.UTF_8));
+        }
+
+        // For .ts segment files
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_TYPE, "video/mp2t")
+                .header(HttpHeaders.CACHE_CONTROL, "no-store")
+                .body(fileBytes);
     }
 
     // ======================== SECTION MANAGEMENT ========================

@@ -13,7 +13,7 @@ import java.util.UUID;
 
 @Getter
 @AllArgsConstructor
-public class UserPrincipal implements UserDetails {
+public class        UserPrincipal implements UserDetails {
 
     private UUID id;
     private String email;

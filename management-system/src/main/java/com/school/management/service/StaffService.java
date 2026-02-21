@@ -87,11 +87,35 @@ public class StaffService {
 
         // Create Salary Structure if basicSalary provided
         if (request.getBasicSalary() != null) {
+            float totalAllowances = 0;
+            if (request.getAllowances() != null) {
+                for (Map<String, Object> allowance : request.getAllowances()) {
+                    Object amountObj = allowance.get("amount");
+                    if (amountObj instanceof Number) {
+                        totalAllowances += ((Number) amountObj).floatValue();
+                    }
+                }
+            }
+
+            float totalDeductions = 0;
+            if (request.getDeductions() != null) {
+                for (Map<String, Object> deduction : request.getDeductions()) {
+                    Object amountObj = deduction.get("amount");
+                    if (amountObj instanceof Number) {
+                        totalDeductions += ((Number) amountObj).floatValue();
+                    }
+                }
+            }
+
+            float netSalary = request.getBasicSalary() + totalAllowances - totalDeductions;
+
             SalaryStructure salaryStructure = SalaryStructure.builder()
                     .school(school)
                     .staff(staffProfile)
                     .basicSalary(request.getBasicSalary())
-                    .netSalary(request.getBasicSalary())
+                    .allowances(request.getAllowances() != null ? request.getAllowances() : new ArrayList<>())
+                    .deductions(request.getDeductions() != null ? request.getDeductions() : new ArrayList<>())
+                    .netSalary(netSalary)
                     .effectiveDate(LocalDate.now())
                     .build();
             salaryStructureRepository.save(salaryStructure);

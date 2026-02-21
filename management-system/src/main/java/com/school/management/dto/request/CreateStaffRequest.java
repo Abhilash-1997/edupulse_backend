@@ -11,6 +11,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
 
 @Data
 @Builder
@@ -43,4 +45,8 @@ public class CreateStaffRequest {
     // Optional - for creating salary structure at the same time
     @Min(value = 0, message = "Basic salary cannot be negative")
     private Float basicSalary;
+
+    private List<Map<String, Object>> allowances;
+
+    private List<Map<String, Object>> deductions;
 }

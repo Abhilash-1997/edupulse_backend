@@ -1,6 +1,7 @@
 package com.school.management.service;
 
 import com.school.management.constant.BusTripStatus;
+import com.school.management.constant.UserRole;
 import com.school.management.dto.request.*;
 import com.school.management.dto.response.*;
 import com.school.management.entity.*;
@@ -262,9 +263,11 @@ public class TransportService {
     @Transactional
     public BusTripResponse startTrip(UUID busId, StartTripRequest request) {
         UUID schoolId = SecurityUtils.getCurrentUserSchoolId();
+        log.info("Starting trip for bus: {}", busId);
 
         Bus bus = busRepository.findByIdAndSchool_IdAndDeletedAtIsNull(busId, schoolId)
                 .orElseThrow(() -> new ResourceNotFoundException("Bus not found"));
+        log.info("Started trip for bus: {}", bus);
 
         // Check if there's already an active trip
         busTripRepository.findByBus_IdAndStatusAndDeletedAtIsNull(busId, BusTripStatus.IN_PROGRESS)
@@ -281,6 +284,7 @@ public class TransportService {
                     request.getRouteId(), schoolId)
                     .orElseThrow(() -> new ResourceNotFoundException("Route not found"));
         }
+        log.info("Route for bus: {}", route);
 
         BusTrip trip = BusTrip.builder()
                 .school(school)
@@ -293,6 +297,7 @@ public class TransportService {
                 .build();
 
         trip = busTripRepository.save(trip);
+        log.info("Trip for bus: {}", trip);
 
         // Emit WebSocket event
         try {
@@ -338,9 +343,8 @@ public class TransportService {
     public List<BusTripResponse> getTrips(UUID busId, BusTripStatus status,
             LocalDateTime startDate, LocalDateTime endDate) {
         UUID schoolId = SecurityUtils.getCurrentUserSchoolId();
-
+        log.info("School Id: {}", schoolId);
         List<BusTrip> trips = busTripRepository.findByFilters(schoolId, busId, status, startDate, endDate);
-
         return trips.stream()
                 .map(this::mapToBusTripResponse)
                 .collect(Collectors.toList());
@@ -406,16 +410,33 @@ public class TransportService {
         Bus bus = busRepository.findByIdAndSchool_IdAndDeletedAtIsNull(busId, schoolId)
                 .orElseThrow(() -> new ResourceNotFoundException("Bus not found"));
 
+        // 1️⃣ Allow driver assigned to this bus
+
         // Check authorization: Admin or parent with child assigned to this bus
+        // Admin always allowed
         if (!SecurityUtils.isAdmin()) {
-            boolean hasAccess = studentBusAssignmentRepository
-                    .findBySchool_IdAndBus_IdAndIsActiveTrueAndDeletedAtIsNull(schoolId, busId)
-                    .stream()
-                    .anyMatch(assignment -> {
-                        Student student = assignment.getStudent();
-                        return student.getParent() != null &&
-                                student.getParent().getUser().getId().equals(currentUserId);
-                    });
+
+            boolean hasAccess = false;
+
+            // 1️⃣ Allow driver assigned to this bus
+            if (SecurityUtils.hasRole(UserRole.BUS_DRIVER)) {
+                hasAccess = bus.getDriver() != null &&
+                        bus.getDriver().getId().equals(currentUserId);
+
+                log.info("Checking acess for current user  {}", hasAccess);
+            }
+
+            // 2️⃣ Allow parent of assigned student
+            if (!hasAccess) {
+                hasAccess = studentBusAssignmentRepository
+                        .findBySchool_IdAndBus_IdAndIsActiveTrueAndDeletedAtIsNull(schoolId, busId)
+                        .stream()
+                        .anyMatch(assignment -> {
+                            Student student = assignment.getStudent();
+                            return student.getParent() != null &&
+                                    student.getParent().getUser().getId().equals(currentUserId);
+                        });
+            }
 
             if (!hasAccess) {
                 throw new UnauthorizedException("You don't have access to this bus location");
@@ -573,6 +594,8 @@ public class TransportService {
                 .notes(trip.getNotes())
                 .busId(trip.getBus().getId())
                 .routeId(trip.getRoute() != null ? trip.getRoute().getId() : null)
+                .bus(mapToBusResponse(trip.getBus()))
+                .route(trip.getRoute() != null ? mapToBusRouteResponse(trip.getRoute()) : null)
                 .build();
     }
 

@@ -14,7 +14,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class BusTripResponse {
+public class    BusTripResponse {
 
     private UUID id;
     private BusTripType tripType;

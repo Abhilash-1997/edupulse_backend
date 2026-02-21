@@ -15,5 +15,6 @@ public class ClassResponse {
 
     private UUID id;
     private String name;
+    private ClassSectionResponse classSection;
     private Long studentCount;
 }

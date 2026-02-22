@@ -81,7 +81,8 @@ public class SecurityConfig {
                                 "/uploads/**",
                                 "/error",
                                 "/ws-chat/**",
-                                "/study-materials/stream/**"
+                                "/study-materials/stream/**",
+                                "/check/**"
                         ).permitAll()
 
                         // All other endpoints require authentication

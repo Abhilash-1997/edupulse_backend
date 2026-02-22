@@ -20,9 +20,8 @@ import java.util.UUID;
 public abstract class BaseEntity {
 
     @Id
-    @GeneratedValue(generator = "UUID")
-    @JdbcTypeCode(SqlTypes.BINARY)
-    @Column(name = "id", columnDefinition = "BINARY(16)", nullable = false)
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id", updatable = false, nullable = false)
     private UUID id;
 
     @CreatedDate

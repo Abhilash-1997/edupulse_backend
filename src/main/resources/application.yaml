@@ -18,7 +18,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update   # change to 'validate' in production
+      ddl-auto: update
     show-sql: false
     open-in-view: false
     properties:
@@ -55,13 +55,14 @@ server:
     context-path: /api
 
 gcp:
-  bucket-name: school-management-abhilash
+  credentials-base64: ${GCS_CREDENTIALS_BASE64}
+  bucket-name: ${GCS_BUCKET_NAME}
 
 
 # JWT Configuration
 jwt:
-  secret: ${JWT_SECRET:your-secret-key-change-this-in-production}
-  expiration: 86400000  # 1 day in milliseconds
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION}
 
 # File Storage
 file:
@@ -69,8 +70,8 @@ file:
 
 # Video Processing (FFmpeg)
 video:
-  ffmpeg-path: ${FFMPEG_PATH:ffmpeg}
-  ffprobe-path: ${FFPROBE_PATH:ffprobe}
+  ffmpeg-path: ${FFMPEG_PATH:/usr/bin/ffmpeg}
+  ffprobe-path: ${FFPROBE_PATH:/usr/bin/ffprobe}
   segment-duration: 6          # HLS segment length in seconds
   process-timeout-minutes: 30  # Max time for FFmpeg to finish
 

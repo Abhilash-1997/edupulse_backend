@@ -15,7 +15,7 @@ import java.util.Collections;
 @Configuration
 public class GcsConfig {
 
-    @Value("${GCS_CREDENTIALS_BASE64}")
+    @Value("${gcp.credentials-base64}")
     private String credentialsBase64;
 
     @Bean

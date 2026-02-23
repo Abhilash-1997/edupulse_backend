@@ -100,10 +100,16 @@ public class VideoProcessingService {
     private HlsResult convertToHLS(Path inputFile, Path outputDir) throws IOException, InterruptedException {
         Path masterManifest = outputDir.resolve("master.m3u8");
 
-        // Build FFmpeg command — same args as the Node.js version
+        // Build FFmpeg
         ProcessBuilder ffmpegProcess = new ProcessBuilder(
                 ffmpegPath,
                 "-i", inputFile.toString(),
+                "-preset", "ultrafast",
+                "-tune", "zerolatency",
+                "-vcodec", "libx264",
+                "-acodec", "aac",
+                "-b:v", "800k",
+                "-b:a", "128k",
                 "-profile:v", "baseline",
                 "-level", "3.0",
                 "-start_number", "0",
@@ -136,7 +142,7 @@ public class VideoProcessingService {
             throw new IOException("FFmpeg failed with exit code: " + process.exitValue());
         }
 
-        // Extract duration using FFprobe (optional — same as Node.js)
+        // Extract duration using FFprobe
         Integer duration = extractDuration(inputFile);
 
         return new HlsResult(masterManifest, duration);

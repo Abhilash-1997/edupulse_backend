@@ -72,8 +72,8 @@ file:
 video:
   ffmpeg-path: ${FFMPEG_PATH:/usr/bin/ffmpeg}
   ffprobe-path: ${FFPROBE_PATH:/usr/bin/ffprobe}
-  segment-duration: 6          # HLS segment length in seconds
-  process-timeout-minutes: 30  # Max time for FFmpeg to finish
+  segment-duration: 6
+  process-timeout-minutes: 120
 
 # CORS Configuration
 cors:

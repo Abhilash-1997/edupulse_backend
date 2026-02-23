@@ -5,6 +5,7 @@ import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,10 +20,11 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class GcsService {
 
+    @Autowired
+    private Storage storage;
+
     @Value("${gcp.bucket-name}")
     private String bucketName;
-
-    private final Storage storage = StorageOptions.getDefaultInstance().getService();
 
     public String uploadFile(String folder, MultipartFile file) throws IOException {
 

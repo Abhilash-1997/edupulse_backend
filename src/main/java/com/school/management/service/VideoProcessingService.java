@@ -33,6 +33,10 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class VideoProcessingService {
 
+    @Value("${gcp.bucket-name}")
+    private String bucketName;
+
+
     private final GcsService gcsService;
     private final StudyMaterialRepository studyMaterialRepository;
 
@@ -226,8 +230,12 @@ public class VideoProcessingService {
 
                 String gcsPath = gcsService.uploadFileFromPath(gcsFolder, file, contentType);
 
+//                if (fileName.equals("master.m3u8")) {
+//                    masterManifestPath = gcsPath;
+//                }
                 if (fileName.equals("master.m3u8")) {
-                    masterManifestPath = gcsPath;
+                    masterManifestPath = "https://storage.googleapis.com/"
+                            + bucketName + "/" + gcsPath;
                 }
             }
         }

@@ -32,7 +32,6 @@ public class GcsService {
 
         BlobInfo blobInfo = BlobInfo.newBuilder(blobId)
                 .setContentType(file.getContentType())
-                .setAcl(List.of(Acl.of(Acl.User.ofAllUsers(), Acl.Role.READER)))
                 .build();
 
         storage.create(blobInfo, file.getBytes());

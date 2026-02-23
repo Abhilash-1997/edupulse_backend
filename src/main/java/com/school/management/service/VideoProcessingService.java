@@ -230,12 +230,8 @@ public class VideoProcessingService {
 
                 String gcsPath = gcsService.uploadFileFromPath(gcsFolder, file, contentType);
 
-//                if (fileName.equals("master.m3u8")) {
-//                    masterManifestPath = gcsPath;
-//                }
                 if (fileName.equals("master.m3u8")) {
-                    masterManifestPath = "https://storage.googleapis.com/"
-                            + bucketName + "/" + gcsPath;
+                    masterManifestPath = gcsPath;
                 }
             }
         }

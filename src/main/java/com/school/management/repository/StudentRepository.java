@@ -89,5 +89,8 @@ public interface StudentRepository extends BaseRepository<Student> {
 """)
     List<Student> findAllByParentWithFetch(UUID schoolId, UUID parentId);
 
+    List<Student> findBySchool_IdAndSection_IdAndDeletedAtIsNull(
+            UUID schoolId,
+            UUID sectionId);
 
 }

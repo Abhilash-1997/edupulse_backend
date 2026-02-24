@@ -152,21 +152,33 @@ public class StudentService {
     }
 
     @Transactional(readOnly = true)
-    public List<StudentResponse> getAllStudents(UUID parentId, UUID classId) {
+    public List<StudentResponse> getAllStudents(
+            UUID parentId,
+            UUID classId,
+            UUID sectionId) {
+
         UUID schoolId = SecurityUtils.getCurrentUserSchoolId();
 
         List<Student> students;
 
-        if (parentId != null) {
+        if (sectionId != null) {
+            students = studentRepository.findBySchool_IdAndSection_IdAndDeletedAtIsNull(schoolId,sectionId);
+        }
+        else if (classId != null) {
+            students = studentRepository.findBySchool_IdAndClassEntity_IdAndDeletedAtIsNull(schoolId,classId);
+        }
+        else if (parentId != null) {
+
             if ("null".equals(parentId.toString())) {
-                students = studentRepository.findBySchool_IdAndParent_IdIsNullAndDeletedAtIsNull(schoolId);
+                students = studentRepository
+                        .findBySchool_IdAndParent_IdIsNullAndDeletedAtIsNull(schoolId);
             } else {
-                students = studentRepository.findBySchool_IdAndParent_IdAndDeletedAtIsNull(schoolId, parentId);
+                students = studentRepository.findBySchool_IdAndParent_IdAndDeletedAtIsNull(schoolId,parentId);
             }
-        } else if (classId != null) {
-            students = studentRepository.findBySchool_IdAndClassEntity_IdAndDeletedAtIsNull(schoolId, classId);
-            log.info("[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[ {}", students.stream().toList());
-        } else {
+
+        }
+        else {
+
             students = studentRepository.findBySchool_IdAndDeletedAtIsNull(schoolId);
         }
 

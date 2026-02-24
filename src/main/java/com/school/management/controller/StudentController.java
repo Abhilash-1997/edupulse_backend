@@ -62,8 +62,9 @@ public class StudentController {
     @GetMapping
     @RequireAdminOrTeacher
     public ResponseEntity<List<StudentResponse>> getAllStudents(@RequestParam(required = false) UUID parentId,
-            @RequestParam(required = false) UUID classId) {
-        List<StudentResponse> response = studentService.getAllStudents(parentId, classId);
+                                                                @RequestParam(required = false) UUID classId,
+                                                                @RequestParam(required = false) UUID sectionId) {
+        List<StudentResponse> response = studentService.getAllStudents(parentId, classId, sectionId);
         return ResponseEntity.ok().body(response);
     }
 

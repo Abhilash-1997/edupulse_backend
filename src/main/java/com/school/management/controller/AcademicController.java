@@ -34,7 +34,6 @@ public class AcademicController {
     }
 
     @GetMapping("/classes")
-    @RequireAdminOrTeacher
     public ResponseEntity<ApiResponse<List<ClassResponse>>> getAllClasses() {
         List<ClassResponse> classes = academicService.getAllClasses();
         return ResponseEntity.ok(ApiResponse.success(classes));
@@ -49,7 +48,6 @@ public class AcademicController {
     }
 
     @GetMapping("/classes/standards")
-    @RequireAdminOrTeacher
     public ResponseEntity<ApiResponse<List<String>>> getStandards() {
         List<String> standards = academicService.getStandards();
         return ResponseEntity.ok(ApiResponse.success(standards));
@@ -75,7 +73,6 @@ public class AcademicController {
     }
 
     @GetMapping("/sections")
-    @RequireAdminOrTeacher
     public ResponseEntity<ApiResponse<List<ClassSectionResponse>>> getAllSections(
             @RequestParam(required = false) UUID schoolId) {
         List<ClassSectionResponse> sections = academicService.getAllSections(schoolId);
@@ -83,7 +80,6 @@ public class AcademicController {
     }
 
     @GetMapping("/classes/standards/{standard}/divisions")
-    @RequireAdminOrTeacher
     public ResponseEntity<ApiResponse<List<ClassSectionResponse>>> getSectionsByClass(
             @PathVariable UUID standard) {
         List<ClassSectionResponse> sections = academicService.getSectionsByClass(standard);
@@ -91,7 +87,6 @@ public class AcademicController {
     }
 
     @GetMapping("/divisions")
-    @RequireAdminOrTeacher
     public ResponseEntity<ApiResponse<List<ClassSectionResponse>>> getDivisions(
             @RequestParam String standard) {
         List<ClassSectionResponse> divisions = academicService.getDivisions(standard);
@@ -124,7 +119,6 @@ public class AcademicController {
     }
 
     @GetMapping("/subjects")
-    @RequireAdminOrTeacher
     public ResponseEntity<ApiResponse<List<SubjectResponse>>> getAllSubjects(
             @RequestParam(required = false) UUID classId) {
         List<SubjectResponse> subjects = academicService.getAllSubjects(classId);

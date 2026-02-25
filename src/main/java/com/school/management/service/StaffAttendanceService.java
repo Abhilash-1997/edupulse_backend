@@ -1,6 +1,9 @@
 package com.school.management.service;
 
+import com.school.management.constant.StaffStatus;
 import com.school.management.dto.request.MarkStaffAttendanceRequest;
+import com.school.management.dto.request.UpdateAttendanceRequest;
+import com.school.management.dto.request.UpdateStaffAttendanceRequest;
 import com.school.management.dto.response.StaffAttendanceByDateResponse;
 import com.school.management.dto.response.StaffAttendanceResponse;
 import com.school.management.dto.response.StaffProfileResponse;
@@ -77,43 +80,45 @@ public class StaffAttendanceService {
          */
         @Transactional(readOnly = true)
         public StaffAttendanceByDateResponse getAttendanceByDate(LocalDate date) {
-                UUID schoolId = SecurityUtils.getCurrentUserSchoolId();
+            UUID schoolId = SecurityUtils.getCurrentUserSchoolId();
+            List<StaffStatus> allowedStatuses = List.of(StaffStatus.ACTIVE, StaffStatus.ON_NOTICE
+            );
 
-                // 1. Get all attendance records for the date
-                List<StaffAttendance> attendances = staffAttendanceRepository
-                                .findBySchool_IdAndDateAndDeletedAtIsNull(schoolId, date);
+            // ✅ Only attendance whose staff status is ACTIVE or ON_NOTICE
+            List<StaffAttendance> attendances = staffAttendanceRepository.findByDateAndStaffStatus(schoolId,date,allowedStatuses);
 
-                // 2. Build marked list
-                List<StaffAttendanceResponse> marked = attendances.stream()
-                                .map(this::mapToStaffAttendanceResponse)
-                                .collect(Collectors.toList());
+            List<StaffAttendanceResponse> marked = attendances.stream()
+                            .map(this::mapToStaffAttendanceResponse)
+                            .toList();
 
-                // 3. Collect staff IDs that already have attendance
-                Set<UUID> markedStaffIds = attendances.stream()
-                                .map(a -> a.getStaff().getId())
-                                .collect(Collectors.toSet());
+            Set<UUID> markedStaffIds = attendances.stream()
+                    .map(a -> a.getStaff().getId())
+                    .collect(Collectors.toSet());
 
-                // 4. Get all active staff for the school
-                List<StaffProfile> allActiveStaff = staffProfileRepository
-                                .findBySchool_IdAndDeletedAtIsNull(schoolId);
+            // ✅ Fetch only ACTIVE + ON_NOTICE staff
+            List<StaffProfile> allValidStaff =
+                    staffProfileRepository.findBySchool_IdAndStatusInAndDeletedAtIsNull(
+                            schoolId,
+                            allowedStatuses
+                    );
 
-                // 5. Build pending list — staff without attendance on this date
-                List<StaffAttendanceByDateResponse.PendingStaffResponse> pending = allActiveStaff.stream()
-                                .filter(sp -> !markedStaffIds.contains(sp.getId()))
-                                .map(sp -> StaffAttendanceByDateResponse.PendingStaffResponse.builder()
-                                                .id(sp.getId())
-                                                .name(sp.getUser() != null ? sp.getUser().getName() : null)
-                                                .employeeCode(sp.getEmployeeCode())
-                                                .designation(sp.getDesignation())
-                                                .department(sp.getDepartment())
-                                                .profilePicture(null)
-                                                .build())
-                                .collect(Collectors.toList());
+            List<StaffAttendanceByDateResponse.PendingStaffResponse> pending =
+                    allValidStaff.stream()
+                            .filter(sp -> !markedStaffIds.contains(sp.getId()))
+                            .map(sp -> StaffAttendanceByDateResponse.PendingStaffResponse.builder()
+                                    .id(sp.getId())
+                                    .name(sp.getUser() != null ? sp.getUser().getName() : null)
+                                    .employeeCode(sp.getEmployeeCode())
+                                    .designation(sp.getDesignation())
+                                    .department(sp.getDepartment())
+                                    .profilePicture(null)
+                                    .build())
+                            .toList();
 
-                return StaffAttendanceByDateResponse.builder()
-                                .marked(marked)
-                                .pending(pending)
-                                .build();
+            return StaffAttendanceByDateResponse.builder()
+                    .marked(marked)
+                    .pending(pending)
+                    .build();
         }
 
         /**
@@ -141,7 +146,7 @@ public class StaffAttendanceService {
          * Update attendance record
          */
         @Transactional
-        public StaffAttendanceResponse updateAttendance(UUID id, MarkStaffAttendanceRequest.StaffAttendanceData data) {
+        public StaffAttendanceResponse updateAttendance(UUID id, UpdateStaffAttendanceRequest data) {
                 UUID schoolId = SecurityUtils.getCurrentUserSchoolId();
 
                 StaffAttendance attendance = staffAttendanceRepository

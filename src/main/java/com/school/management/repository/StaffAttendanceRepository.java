@@ -1,5 +1,6 @@
 package com.school.management.repository;
 
+import com.school.management.constant.StaffStatus;
 import com.school.management.entity.StaffAttendance;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -29,5 +30,19 @@ public interface StaffAttendanceRepository extends BaseRepository<StaffAttendanc
             @Param("staffId") UUID staffId,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate
+    );
+
+    @Query("""
+    SELECT sa FROM StaffAttendance sa
+    JOIN sa.staff sp
+    WHERE sa.school.id = :schoolId
+    AND sa.date = :date
+    AND sa.deletedAt IS NULL
+    AND sp.status IN :statuses
+    """)
+    List<StaffAttendance> findByDateAndStaffStatus(
+            UUID schoolId,
+            LocalDate date,
+            List<StaffStatus> statuses
     );
 }

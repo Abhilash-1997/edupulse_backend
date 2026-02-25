@@ -1,6 +1,7 @@
 package com.school.management.controller;
 
 import com.school.management.dto.request.MarkStaffAttendanceRequest;
+import com.school.management.dto.request.UpdateStaffAttendanceRequest;
 import com.school.management.dto.response.ApiResponse;
 import com.school.management.dto.response.StaffAttendanceByDateResponse;
 import com.school.management.dto.response.StaffAttendanceResponse;
@@ -51,8 +52,7 @@ public class StaffAttendanceController {
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<StaffAttendanceResponse>> updateAttendance(
             @PathVariable UUID id,
-            @Valid @RequestBody MarkStaffAttendanceRequest.StaffAttendanceData data) {
-
+            @Valid @RequestBody UpdateStaffAttendanceRequest data) {
         StaffAttendanceResponse response = staffAttendanceService.updateAttendance(id, data);
         return ResponseEntity.ok(ApiResponse.success("Staff attendance updated successfully", response));
     }

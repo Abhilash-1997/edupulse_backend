@@ -15,6 +15,7 @@ import com.school.management.entity.*;
 import com.school.management.exception.BadRequestException;
 import com.school.management.exception.ResourceNotFoundException;
 import com.school.management.repository.*;
+import com.school.management.spec.ExamResultSpecification;
 import com.school.management.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -193,8 +194,8 @@ public class ExamService {
             UUID classId, UUID sectionId) {
         UUID schoolId = SecurityUtils.getCurrentUserSchoolId();
 
-        List<ExamResult> results = examResultRepository.findByFilters(
-                schoolId, examId, subjectId, classId, sectionId);
+        List<ExamResult> results = examResultRepository.findAll(
+                ExamResultSpecification.withFilters(schoolId, examId, subjectId, classId, sectionId));
 
         // Group results by student
         Map<UUID, List<ExamResult>> resultsByStudent = results.stream()

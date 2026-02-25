@@ -9,6 +9,7 @@ import com.school.management.exception.BadRequestException;
 import com.school.management.exception.ResourceNotFoundException;
 import com.school.management.exception.UnauthorizedException;
 import com.school.management.repository.*;
+import com.school.management.spec.BusTripSpecification;
 import com.school.management.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -344,7 +345,9 @@ public class TransportService {
             LocalDateTime startDate, LocalDateTime endDate) {
         UUID schoolId = SecurityUtils.getCurrentUserSchoolId();
         log.info("School Id: {}", schoolId);
-        List<BusTrip> trips = busTripRepository.findByFilters(schoolId, busId, status, startDate, endDate);
+        List<BusTrip> trips = busTripRepository.findAll(
+                BusTripSpecification.withFilters(schoolId, busId, status, startDate, endDate));
+
         return trips.stream()
                 .map(this::mapToBusTripResponse)
                 .collect(Collectors.toList());

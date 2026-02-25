@@ -19,6 +19,7 @@ import com.school.management.exception.ResourceNotFoundException;
 import com.school.management.exception.UnauthorizedException;
 import com.school.management.repository.*;
 import com.school.management.security.JwtTokenProvider;
+import com.school.management.spec.StudyMaterialSectionSpecification;
 import com.school.management.util.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -109,10 +110,11 @@ public class StudyMaterialService {
         UUID userId = SecurityUtils.getCurrentUserId();
         UserRole userRole = SecurityUtils.getCurrentUserRole();
 
-        List<StudyMaterialSection> sections;
+        // Fetch once
+        List<StudyMaterialSection> sections = studyMaterialSectionRepository.findAll(
+                StudyMaterialSectionSpecification.withFilters(schoolId, classId, subjectId, sectionId));
 
         if (UserRole.PARENT.equals(userRole)) {
-            // Parents see published sections for their children's classes
             Parent parent = parentRepository
                     .findByUser_IdAndDeletedAtIsNull(userId)
                     .orElseThrow(() -> new ForbiddenException("Parent record not found"));
@@ -126,28 +128,15 @@ public class StudyMaterialService {
                     .distinct()
                     .collect(Collectors.toList());
 
-            sections = studyMaterialSectionRepository.findByFilters(
-                    schoolId, classId, subjectId, sectionId);
-
             sections = sections.stream()
                     .filter(s -> s.getIsPublished() &&
                             (childClassIds.isEmpty() || childClassIds.contains(s.getClassEntity().getId())))
                     .collect(Collectors.toList());
 
-        } else if (!SecurityUtils.isAdmin()) {
-            // Teachers see all (filtered by provided params), students see only published
-            sections = studyMaterialSectionRepository.findByFilters(
-                    schoolId, classId, subjectId, sectionId);
-
-            if (!SecurityUtils.hasRole(UserRole.TEACHER)) {
-                sections = sections.stream()
-                        .filter(StudyMaterialSection::getIsPublished)
-                        .collect(Collectors.toList());
-            }
-        } else {
-            // Admins see everything
-            sections = studyMaterialSectionRepository.findByFilters(
-                    schoolId, classId, subjectId, sectionId);
+        } else if (!SecurityUtils.isAdmin() && !SecurityUtils.hasRole(UserRole.TEACHER)) {
+            sections = sections.stream()
+                    .filter(StudyMaterialSection::getIsPublished)
+                    .collect(Collectors.toList());
         }
 
         return sections.stream()
